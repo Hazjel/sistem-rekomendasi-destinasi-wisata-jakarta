@@ -125,6 +125,73 @@ def dedupe(rows):
     return out
 
 
+def _haversine_m(lat1, lon1, lat2, lon2):
+    from math import radians, sin, cos, asin, sqrt
+    r = 6371000
+    dlat, dlon = radians(lat2 - lat1), radians(lon2 - lon1)
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+    return 2 * r * asin(sqrt(a))
+
+
+_GENERIC_WORDS = {
+    "taman", "museum", "monumen", "patung", "lapangan", "kawasan", "gedung",
+    "anjungan", "menara", "tugu", "park", "playground", "garden", "blok",
+    "kompleks", "komplek", "pertigaan", "ruang", "habitat", "jogging", "kota",
+}
+
+
+def _shared_word(name_a, name_b):
+    """True kalau kedua nama berbagi kata khas non-generik (cth 'Monas Selatan' vs 'Taman Monas' -> 'monas')."""
+    wa = {w for w in name_a.lower().split() if len(w) > 3 and w not in _GENERIC_WORDS}
+    wb = {w for w in name_b.lower().split() if len(w) > 3 and w not in _GENERIC_WORDS}
+    return bool(wa & wb)
+
+
+def _row_priority(r):
+    """Skor representative cluster: kategori spesifik > punya referensi > nama panjang."""
+    has_ref = bool(r["website"] or r["wikipedia"] or r["wikidata"])
+    specific_category = not r["venue_category"].endswith(":yes")
+    return (specific_category, has_ref, len(r["name"]))
+
+
+def dedupe_clusters(rows, radius_m=700):
+    """Gabung venue beda nama tapi entitas sama (cth 4 gerbang Monas jadi 1).
+
+    Cluster transitif (BFS): venue berjarak <= radius_m DAN nama nyambung
+    (kata kunci sama) digabung jadi grup, walau tak semua pasangan dalam
+    grup berjarak dekat langsung (cth Utara-Selatan jauh tapi sama-sama
+    dekat Taman Monas yang jadi penghubung). Pilih 1 representative per
+    cluster (kategori paling spesifik, ada referensi, nama paling deskriptif).
+    """
+    n = len(rows)
+    adj = [[] for _ in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            dist = _haversine_m(rows[i]["latitude"], rows[i]["longitude"],
+                                 rows[j]["latitude"], rows[j]["longitude"])
+            if dist <= radius_m and _shared_word(rows[i]["name"], rows[j]["name"]):
+                adj[i].append(j)
+                adj[j].append(i)
+
+    visited = [False] * n
+    out = []
+    for i in range(n):
+        if visited[i]:
+            continue
+        stack, cluster_idx = [i], []
+        visited[i] = True
+        while stack:
+            cur = stack.pop()
+            cluster_idx.append(cur)
+            for nb in adj[cur]:
+                if not visited[nb]:
+                    visited[nb] = True
+                    stack.append(nb)
+        cluster = [rows[k] for k in cluster_idx]
+        out.append(max(cluster, key=_row_priority))
+    return out
+
+
 def main():
     os.makedirs("data", exist_ok=True)
     all_elements = []
@@ -144,7 +211,17 @@ def main():
         all_elements.extend(els)
         time.sleep(8)  # jeda sopan, hindari 429 rate-limit
     rows = dedupe(parse(all_elements))
-    print(f"Dapat {len(rows)} venue unik.")
+    print(f"Dapat {len(rows)} venue unik (sebelum cluster-dedupe).")
+
+    # Cluster-dedupe hanya utk kategori tourism/leisure/historic -> venue besar
+    # (cth Monas) kadang punya >1 entitas OSM (gerbang, taman, monumen) yg
+    # sebenarnya 1 destinasi. amenity (masjid/pasar) jumlahnya besar & jarang
+    # overlap penamaan, skip biar tetap cepat (hindari O(n^2) di >5000 row).
+    clusterable = [r for r in rows if not r["venue_category"].startswith("amenity:")]
+    rest = [r for r in rows if r["venue_category"].startswith("amenity:")]
+    clustered = dedupe_clusters(clusterable)
+    rows = clustered + rest
+    print(f"Dapat {len(rows)} venue unik (setelah cluster-dedupe).")
 
     with open(config.RAW_CSV, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
