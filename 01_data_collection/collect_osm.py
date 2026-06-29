@@ -9,10 +9,12 @@ Output: data/venues_raw.csv dengan kolom inti
 """
 import csv
 import os
+import sys
 import time
 
 import requests
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 
 
@@ -193,7 +195,7 @@ def dedupe_clusters(rows, radius_m=700):
 
 
 def main():
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(os.path.dirname(config.RAW_CSV), exist_ok=True)
     all_elements = []
     for key, values in config.TOURISM_FILTERS.items():
         print(f"Query Overpass: {key} ...")

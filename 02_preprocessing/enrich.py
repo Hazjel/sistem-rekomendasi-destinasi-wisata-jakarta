@@ -8,9 +8,13 @@ Lengkapi venue mentah:
 
 Output: data/venues_enriched.csv
 """
+import os
+import sys
+
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from openhours import DAYS_ID, parse_opening_hours
 
