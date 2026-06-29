@@ -16,19 +16,29 @@ import requests
 import config
 
 
-def build_query(bbox, key, values):
+def build_query(bbox, key, values, area_name=None, area_admin_level=None):
     """Query Overpass-QL single-line untuk SATU filter kategori.
 
     Query gabungan multi-statement bikin mod_security overpass-api.de
     balas 406. Jadi pisah per filter, single-line, panggil bergiliran.
+
+    Pakai boundary administratif asli (area_name+admin_level) bila tersedia,
+    bukan bounding box persegi -> bbox persegi Jakarta overlap sebagian
+    wilayah Bekasi/Depok/Tangerang sehingga venue luar Jakarta ikut tertarik.
     """
-    s, w, n, e = bbox
-    box = f"({s},{w},{n},{e})"
     if values is None:
         sel = f'["{key}"]["name"]'
     else:
         regex = "|".join(values)
         sel = f'["{key}"~"^({regex})$"]["name"]'
+
+    if area_name is not None:
+        area_def = f'area["name"="{area_name}"]["admin_level"="{area_admin_level}"]->.a;'
+        body = f"node{sel}(area.a);way{sel}(area.a);"
+        return f"[out:json][timeout:120];{area_def}({body});out center tags;"
+
+    s, w, n, e = bbox
+    box = f"({s},{w},{n},{e})"
     body = f"node{sel}{box};way{sel}{box};"
     return f"[out:json][timeout:120];({body});out center tags;"
 
@@ -119,9 +129,16 @@ def main():
     os.makedirs("data", exist_ok=True)
     all_elements = []
     for key, values in config.TOURISM_FILTERS.items():
-        query = build_query(config.JAKARTA_BBOX, key, values)
         print(f"Query Overpass: {key} ...")
-        data = fetch(query)
+        try:
+            query = build_query(config.JAKARTA_BBOX, key, values,
+                                 area_name=config.JAKARTA_AREA_NAME,
+                                 area_admin_level=config.JAKARTA_AREA_ADMIN_LEVEL)
+            data = fetch(query)
+        except Exception as exc:
+            print(f"  area query gagal ({exc}), fallback ke bbox ...")
+            query = build_query(config.JAKARTA_BBOX, key, values)
+            data = fetch(query)
         els = data.get("elements", [])
         print(f"  {len(els)} elemen.")
         all_elements.extend(els)

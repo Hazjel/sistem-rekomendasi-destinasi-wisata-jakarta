@@ -1,7 +1,15 @@
 """Konfigurasi global proyek rekomendasi destinasi wisata Jakarta."""
 
-# Bounding box Jakarta (south, west, north, east) untuk query Overpass.
+# Bounding box Jakarta (south, west, north, east) -> fallback kalau area OSM gagal.
+# CATATAN: bbox persegi overlap sebagian Bekasi/Depok/Tangerang. Filter utama
+# pakai AREA_RELATION (boundary administratif asli) di build_query().
 JAKARTA_BBOX = (-6.40, 106.65, -6.08, 107.00)
+
+# Boundary administratif DKI Jakarta (admin_level=4) di Overpass, dicari via
+# tag name+admin_level (bukan hardcode relation id -> lebih robust).
+# https://www.openstreetmap.org/relation/6362934
+JAKARTA_AREA_NAME = "Daerah Khusus Ibukota Jakarta"
+JAKARTA_AREA_ADMIN_LEVEL = "4"
 
 # Endpoint Overpass (OpenStreetMap). Gratis, tanpa API key.
 # Coba urut; kalau satu sibuk/gagal pindah berikutnya.
