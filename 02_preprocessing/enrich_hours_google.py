@@ -128,8 +128,8 @@ def get_place_details(place_id, api_key):
         oh_data = data.get("regularOpeningHours") or data.get("currentOpeningHours") or {}
         periods = oh_data.get("periods", [])
         hours = {d: None for d in DAYS_ID}
-        # Deteksi 24 jam: hanya 1 period dengan open tapi tanpa close
-        is_24h = (len(periods) == 1 and "close" not in periods[0])
+        # Deteksi 24 jam: semua period tidak punya close (1 period global atau 7 per hari)
+        is_24h = len(periods) > 0 and all("close" not in p for p in periods)
         if is_24h:
             for d in DAYS_ID:
                 hours[d] = ("00:00", "23:59")
