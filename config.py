@@ -307,6 +307,8 @@ STEPS_NAME_BLACKLIST = [
     "beach pool ancol",           # koordinat salah 10km, kolam renang bukan wisata
     "lollipop gandaria city",     # Google match Senayan bukan Gandaria, duplikat
     "world of reptile",           # Google match toko reptil bukan destinasi wisata
+    # Batch 9: venue by-appointment / tidak terima kunjungan publik bebas
+    "harry darsono museum",       # reservasi wajib, tidak bisa dikunjungi walk-in
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +

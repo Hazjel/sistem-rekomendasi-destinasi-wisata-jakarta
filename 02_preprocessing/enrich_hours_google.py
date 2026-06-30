@@ -128,15 +128,21 @@ def get_place_details(place_id, api_key):
         oh_data = data.get("regularOpeningHours") or data.get("currentOpeningHours") or {}
         periods = oh_data.get("periods", [])
         hours = {d: None for d in DAYS_ID}
-        for p in periods:
-            day_num = p.get("open", {}).get("day")
-            day_id = GDAY_TO_ID.get(day_num)
-            if not day_id:
-                continue
-            o, c = p.get("open", {}), p.get("close", {})
-            oh, om = o.get("hour", 0), o.get("minute", 0)
-            ch, cm = c.get("hour", 0), c.get("minute", 0)
-            hours[day_id] = (f"{oh:02d}:{om:02d}", f"{ch:02d}:{cm:02d}")
+        # Deteksi 24 jam: hanya 1 period dengan open tapi tanpa close
+        is_24h = (len(periods) == 1 and "close" not in periods[0])
+        if is_24h:
+            for d in DAYS_ID:
+                hours[d] = ("00:00", "23:59")
+        else:
+            for p in periods:
+                day_num = p.get("open", {}).get("day")
+                day_id = GDAY_TO_ID.get(day_num)
+                if not day_id:
+                    continue
+                o, c = p.get("open", {}), p.get("close", {})
+                oh, om = o.get("hour", 0), o.get("minute", 0)
+                ch, cm = c.get("hour", 0), c.get("minute", 0)
+                hours[day_id] = (f"{oh:02d}:{om:02d}", f"{ch:02d}:{cm:02d}")
 
         # Parse addressComponents -> kecamatan (level_4) dan kota (level_2)
         # Google Places API v1 untuk Indonesia: pakai administrative_area_level_4

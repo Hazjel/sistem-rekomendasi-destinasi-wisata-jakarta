@@ -94,15 +94,21 @@ def get_place_details(place_id, api_key):
         oh_data = data.get("regularOpeningHours") or data.get("currentOpeningHours") or {}
         periods = oh_data.get("periods", [])
         hours = {d: None for d in DAYS_ID}
-        for p in periods:
-            day_num = p.get("open", {}).get("day")
-            day_id = GDAY_TO_ID.get(day_num)
-            if not day_id:
-                continue
-            o, c = p.get("open", {}), p.get("close", {})
-            oh, om = o.get("hour", 0), o.get("minute", 0)
-            ch, cm = c.get("hour", 0), c.get("minute", 0)
-            hours[day_id] = (f"{oh:02d}:{om:02d}", f"{ch:02d}:{cm:02d}")
+        # Deteksi 24 jam: hanya 1 period, open day=0 tanpa close
+        is_24h = (len(periods) == 1 and "close" not in periods[0])
+        if is_24h:
+            for d in DAYS_ID:
+                hours[d] = ("00:00", "23:59")
+        else:
+            for p in periods:
+                day_num = p.get("open", {}).get("day")
+                day_id = GDAY_TO_ID.get(day_num)
+                if not day_id:
+                    continue
+                o, c = p.get("open", {}), p.get("close", {})
+                oh, om = o.get("hour", 0), o.get("minute", 0)
+                ch, cm = c.get("hour", 0), c.get("minute", 0)
+                hours[day_id] = (f"{oh:02d}:{om:02d}", f"{ch:02d}:{cm:02d}")
 
         sublocality, locality = None, None
         for comp in data.get("addressComponents", []):
@@ -164,9 +170,16 @@ def main():
                             "primary_type": "object", "business_status": "object",
                             "photo_ref": "object"})
 
-    # Target: hanya venue yang masih default_category
-    targets = df[df["hours_source"] == "default_category"]
-    print(f"Venue target retry: {len(targets)}")
+    # Target: venue default_category ATAU google_places tapi semua jam Tutup
+    # (terjadi saat venue masuk via Google batch setelah enrich_hours jalan)
+    DAYS_ID_LOCAL = ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"]
+    buka_cols = [f"{d}_buka" for d in DAYS_ID_LOCAL]
+    mask_all_tutup = df[buka_cols].apply(lambda row: (row == "Tutup").all(), axis=1)
+    mask_target = (df["hours_source"] == "default_category") | (
+        (df["hours_source"] == "google_places") & mask_all_tutup
+    )
+    targets = df[mask_target]
+    print(f"Venue target retry: {len(targets)} (default_category + google_places all-Tutup)")
 
     n_ok, n_miss = 0, 0
 
