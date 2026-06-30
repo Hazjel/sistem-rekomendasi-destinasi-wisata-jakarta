@@ -40,7 +40,12 @@ def main():
     )
     outside_names = df.loc[mask_outside & ~mask_blacklist, "name"].tolist()
 
-    mask_drop = mask_blacklist | mask_outside
+    # Filter venue tutup permanen/sementara (dari businessStatus Google Places)
+    CLOSED_STATUSES = {"CLOSED_PERMANENTLY", "CLOSED_TEMPORARILY"}
+    mask_closed = df["business_status"].isin(CLOSED_STATUSES)
+    closed_names = df.loc[mask_closed & ~mask_blacklist & ~mask_outside, "name"].tolist()
+
+    mask_drop = mask_blacklist | mask_outside | mask_closed
     df_clean = df[~mask_drop].copy().reset_index(drop=True)
     n_after = len(df_clean)
 
@@ -49,10 +54,15 @@ def main():
         print("  Daftar yang dibuang:")
         for name in removed:
             print(f"    - {name}")
-    print(f"Dibuang (luar bbox DKI): {mask_outside.sum()}")
+    print(f"Dibuang (luar polygon DKI): {mask_outside.sum()}")
     if outside_names:
         for name in outside_names:
             print(f"    - {name}")
+    print(f"Dibuang (closed/tutup permanen atau sementara): {mask_closed.sum()}")
+    if closed_names:
+        for name in closed_names:
+            status = df.loc[df["name"] == name, "business_status"].values[0]
+            print(f"    - [{status}] {name}")
     print(f"Venue setelah cleaning: {n_after}")
 
     tmp = config.MERGED_VENUES_ENRICHED_CSV + ".tmp"
