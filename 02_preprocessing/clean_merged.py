@@ -12,7 +12,6 @@ Input:  data/processed/merged_venues_enriched.csv
 Output: data/processed/merged_venues_enriched.csv (in-place, overwrite)
 """
 import os
-import shutil
 import sys
 
 import pandas as pd
@@ -101,12 +100,7 @@ def main():
             print(f"    - {name}")
     print(f"Venue setelah cleaning: {n_after}")
 
-    tmp = config.MERGED_VENUES_ENRICHED_CSV + ".tmp"
-    df_clean.to_csv(tmp, index=False)
-    try:
-        os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
-    except PermissionError:
-        shutil.move(tmp, config.MERGED_VENUES_ENRICHED_CSV)
+    df_clean.to_csv(config.MERGED_VENUES_ENRICHED_CSV, index=False)
     print(f"\nTersimpan -> {config.MERGED_VENUES_ENRICHED_CSV}")
 
 
