@@ -12,9 +12,12 @@ Input:  data/processed/merged_venues_enriched.csv
 Output: data/processed/merged_venues_enriched.csv (in-place, overwrite)
 """
 import os
+import shutil
 import sys
 
 import pandas as pd
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
@@ -54,6 +57,14 @@ def main():
 
     # Filter vihara/temple kecil yang bukan destinasi wisata publik:
     # checkin_count < 5 DAN bukan tempat ibadah bersejarah/dikenal
+    # Kecualikan venue yang ditambah manual (manual_venues.csv) — sudah dikurasi
+    MANUAL_CSV = os.path.join(os.path.dirname(config.MERGED_VENUES_ENRICHED_CSV),
+                              "..", "raw", "manual_venues.csv")
+    manual_names = set()
+    if os.path.exists(MANUAL_CSV):
+        manual_df = pd.read_csv(MANUAL_CSV)
+        manual_names = set(manual_df["name"].str.lower().str.strip())
+
     HISTORIC_TEMPLE_KEYWORDS = [
         "toasebio", "dharma bhakti", "petak sembilan", "klenteng",
         "istiqlal", "katedral", "gereja", "masjid agung", "masjid raya",
@@ -66,7 +77,10 @@ def main():
         checkin = row.get("checkin_count", 0) or 0
         if checkin >= 5:
             return False
-        name_lower = str(row.get("name", "")).lower()
+        name_lower = str(row.get("name", "")).lower().strip()
+        # Venue dari manual_venues.csv sudah dikurasi manual — jangan dibuang
+        if name_lower in manual_names:
+            return False
         if any(kw in name_lower for kw in HISTORIC_TEMPLE_KEYWORDS):
             return False
         return True
@@ -100,7 +114,10 @@ def main():
 
     tmp = config.MERGED_VENUES_ENRICHED_CSV + ".tmp"
     df_clean.to_csv(tmp, index=False)
-    os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
+    try:
+        os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
+    except PermissionError:
+        shutil.move(tmp, config.MERGED_VENUES_ENRICHED_CSV)
     print(f"\nTersimpan -> {config.MERGED_VENUES_ENRICHED_CSV}")
 
 

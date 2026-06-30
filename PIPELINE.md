@@ -28,12 +28,17 @@ Transformasi bertahap. Tiap script punya print **before/after** jumlah row.
 | 1 | `clean_osm.py` | `venues_osm_raw.csv` | `venues_osm_clean.csv` | Dedupe exact + cluster-dedupe venue besar (Monas, dll) |
 | 2 | `clean_steps.py` | `jakarta_checkins_raw.csv` | `steps_checkins_clean.csv` + `steps_venues_raw.csv` | Drop null, agregasi per venue, hitung checkin_count |
 | 3 | `filter_tourism.py` | `steps_venues_raw.csv` | `steps_filtered.csv` | 4 tahap: whitelist 14 kategori → keyword-exclude → blacklist eksplisit → dedupe nama |
-| 4 | `merge_sources.py` | `steps_filtered.csv` + `venues_enriched.csv` | `merged_venues.csv` | Gabung Massive-STEPS + OSM enrichment (jam buka, link referensi) radius 150m |
-| 5 | `enrich_hours_google.py` | `merged_venues.csv` | `merged_venues_enriched.csv` | Enrich jam buka + rating + deskripsi via Google Places API. Venue outdoor/parsial otomatis dapat fallback jam default per kategori |
-| 6 | `clean_merged.py` | `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Noise removal: buang kantor, venue luar Jakarta, nama ambigu |
-| 7 | `merge_google_venues.py` | `venues_google_raw.csv` + `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Tambah venue wisata dari Google Places yang tidak ada di Massive-STEPS |
+| 4 | `merge_sources.py` | `steps_filtered.csv` | `merged_venues.csv` | Gabung Massive-STEPS + OSM enrichment radius 150m |
+| 5 | `enrich_hours_google.py` | `merged_venues.csv` | `merged_venues_enriched.csv` | Enrich jam buka + 10 field Google Places. Fallback jam default per kategori jika tidak ditemukan |
+| 6 | `patch_address_cache.py` | cache + `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Backfill sublocality/locality dari addressComponents (administrative_area_level_4/2) |
+| 7 | `merge_google_venues.py` | `venues_google_raw.csv` + `manual_venues.csv` + `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Tambah venue dari Google batch + manual_venues.csv. Filter polygon DKI (bukan bbox) |
+| 8 | `retry_missing_venues.py` | `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Retry Google Places dengan query alternatif untuk venue yang masih default_category |
+| 9 | `clean_merged.py` | `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Filter: blacklist, luar polygon DKI, businessStatus CLOSED, temple/vihara kecil (checkin<5) |
 
-**Result setelah 02**: `data/processed/merged_venues_enriched.csv` — 376 venue, lengkap dengan jam buka per hari, google_rating, deskripsi, dll.
+**Result setelah 02**: `data/processed/merged_venues_enriched.csv` — ~255 venue OPERATIONAL DKI Jakarta, lengkap jam buka per hari, google_rating, businessStatus, sublocality, aksesibilitas, dll.
+
+**File sumber manual** (jangan hapus):
+- `data/raw/manual_venues.csv` — venue wisata yang ditambah manual (vihara populer tidak ada di STEPS/Google batch)
 
 ---
 

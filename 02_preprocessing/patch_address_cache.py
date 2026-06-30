@@ -8,8 +8,11 @@ Hemat kuota: skip venue yang sudah terisi.
 """
 import json
 import os
+import shutil
 import sys
 import time
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import pandas as pd
 import requests
@@ -133,7 +136,10 @@ def main():
     # Simpan
     tmp = config.MERGED_VENUES_ENRICHED_CSV + ".tmp"
     df.to_csv(tmp, index=False)
-    os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
+    try:
+        os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
+    except PermissionError:
+        shutil.move(tmp, config.MERGED_VENUES_ENRICHED_CSV)
 
     print(f"\nSelesai: patch={n_patch} skip={n_skip} miss={n_miss}")
     print(f"Coverage sublocality: {df['sublocality'].notna().sum()}/{len(df)}")

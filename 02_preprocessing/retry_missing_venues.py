@@ -4,9 +4,12 @@ dengan query alternatif (nama lebih pendek, tanpa tanda baca, + nama alternatif 
 """
 import json
 import os
+import shutil
 import sys
 import time
 import re
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import pandas as pd
 import requests
@@ -233,7 +236,10 @@ def main():
 
     tmp = config.MERGED_VENUES_ENRICHED_CSV + ".tmp"
     df.to_csv(tmp, index=False)
-    os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
+    try:
+        os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
+    except PermissionError:
+        shutil.move(tmp, config.MERGED_VENUES_ENRICHED_CSV)
 
     print(f"\nRetry selesai: ok={n_ok} miss={n_miss}")
     remaining = df[df["hours_source"] == "default_category"]

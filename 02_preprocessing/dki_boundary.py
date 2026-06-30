@@ -13,8 +13,11 @@ from shapely.ops import unary_union
 # Polygon daratan DKI Jakarta (approximate, clockwise dari barat-laut)
 # Sumber: batas administratif DKI Jakarta, diverifikasi manual vs Google Maps
 _DKI_DARATAN = [
-    # Barat Laut (Penjaringan/Pluit)
-    (106.7280, -6.0900),
+    # Barat Laut (Penjaringan/Pluit/PIK/Kapuk/Kamal Muara)
+    # PIK koordinat: lon=106.735, lat=-6.089 → polygon harus cover ini
+    (106.7100, -6.0800),  # Kamal Muara barat laut (titik paling barat DKI utara)
+    (106.7300, -6.0850),  # Kalideres/Cengkareng utara
+    (106.7450, -6.0900),  # Kapuk utara
     (106.7550, -6.0950),
     (106.7800, -6.0850),
     # Utara (Pantai Utara, Marunda)
@@ -40,17 +43,20 @@ _DKI_DARATAN = [
     (106.8350, -6.3400),
     (106.8100, -6.3350),
     # Barat Daya (Pesanggrahan/Kebayoran Lama, batas Tangsel)
+    # Bintaro (Tangsel) ada di lon~106.754 lat~-6.269 — harus di LUAR polygon
+    # Batas DKI-Tangsel di sini sekitar lon 106.770-106.780
     (106.7850, -6.3200),
-    (106.7700, -6.3050),
-    (106.7600, -6.2850),
+    (106.7750, -6.3050),
+    (106.7700, -6.2800),
+    (106.7700, -6.2500),  # Kebayoran Lama / Ciputat border
     # Barat (Cengkareng/Kalideres, batas Tangerang)
-    (106.7350, -6.2500),
-    (106.7250, -6.2200),
-    (106.7200, -6.1900),
-    (106.7200, -6.1500),
-    (106.7250, -6.1200),
-    # Barat Laut kembali
-    (106.7280, -6.0900),
+    (106.7550, -6.2300),
+    (106.7400, -6.2100),
+    (106.7250, -6.1900),
+    (106.7150, -6.1500),
+    (106.7100, -6.1200),
+    # Barat Laut kembali ke titik awal
+    (106.7100, -6.0800),
 ]
 
 # Kepulauan Seribu: bbox laut utara Jakarta
