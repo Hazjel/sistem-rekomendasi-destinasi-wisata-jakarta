@@ -57,13 +57,6 @@ def main():
 
     # Filter vihara/temple kecil yang bukan destinasi wisata publik:
     # checkin_count < 5 DAN bukan tempat ibadah bersejarah/dikenal
-    # Kecualikan venue yang ditambah manual (manual_venues.csv) — sudah dikurasi
-    MANUAL_CSV = "curated/manual_venues.csv"
-    manual_names = set()
-    if os.path.exists(MANUAL_CSV):
-        manual_df = pd.read_csv(MANUAL_CSV)
-        manual_names = set(manual_df["name"].str.lower().str.strip())
-
     HISTORIC_TEMPLE_KEYWORDS = [
         "toasebio", "dharma bhakti", "petak sembilan", "klenteng",
         "istiqlal", "katedral", "gereja", "masjid agung", "masjid raya",
@@ -77,9 +70,6 @@ def main():
         if checkin >= 5:
             return False
         name_lower = str(row.get("name", "")).lower().strip()
-        # Venue dari manual_venues.csv sudah dikurasi manual — jangan dibuang
-        if name_lower in manual_names:
-            return False
         if any(kw in name_lower for kw in HISTORIC_TEMPLE_KEYWORDS):
             return False
         return True

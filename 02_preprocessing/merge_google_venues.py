@@ -203,32 +203,6 @@ def main():
     # Gabung Google batch
     combined = pd.concat([existing, google_new], ignore_index=True)
 
-    # Merge manual venues (venue yang ditambah manual, tidak ada di STEPS/OSM/Google batch)
-    MANUAL_CSV = "curated/manual_venues.csv"
-    if os.path.exists(MANUAL_CSV):
-        manual = pd.read_csv(MANUAL_CSV,
-                             dtype={"sublocality": "object", "locality": "object",
-                                    "primary_type": "object", "business_status": "object",
-                                    "photo_ref": "object", "description": "object"})
-        # Dedup: skip manual venue yang sudah overlap dengan combined (radius 100m)
-        comb_lat = combined["latitude"].to_numpy()
-        comb_lon = combined["longitude"].to_numpy()
-        new_manual = []
-        for _, row in manual.iterrows():
-            dists = haversine_m(row["latitude"], row["longitude"], comb_lat, comb_lon)
-            if dists.min() > OVERLAP_RADIUS_M:
-                new_manual.append(row)
-        if new_manual:
-            manual_df = pd.DataFrame(new_manual)
-            for col in combined.columns:
-                if col not in manual_df.columns:
-                    manual_df[col] = None
-            manual_df = manual_df[combined.columns]
-            combined = pd.concat([combined, manual_df], ignore_index=True)
-            print(f"  Tambahan dari manual_venues.csv: {len(new_manual)}")
-        else:
-            print(f"  manual_venues.csv: semua sudah overlap dengan existing (skip)")
-
     n_final = len(combined)
     print(f"\nDataset final setelah merge Google venues: {n_final}")
     print(f"  Existing (STEPS+OSM): {n_existing}")
