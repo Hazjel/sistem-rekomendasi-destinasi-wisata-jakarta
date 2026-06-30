@@ -311,7 +311,6 @@ STEPS_NAME_BLACKLIST = [
     "harry darsono museum",       # reservasi wajib, tidak bisa dikunjungi walk-in
     # Batch 10: audit jam 2026-06-30 — duplikat, jam sangat terbatas
     "pura adhitya jaya",          # duplikat Pura Aditya Jaya (venue_id 55752), beda ejaan saja
-    "galeria sophilia",           # hanya buka Minggu 3 jam — terlalu terbatas untuk itinerary
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +

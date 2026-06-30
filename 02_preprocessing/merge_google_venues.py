@@ -160,9 +160,13 @@ def main():
     # Cari Google venue yang tidak overlap dengan existing
     exist_lat = existing["latitude"].to_numpy()
     exist_lon = existing["longitude"].to_numpy()
+    exist_names_lower = set(existing["name"].str.lower().str.strip())
 
     new_venues = []
     for _, row in google_deduped.iterrows():
+        # Skip jika nama sudah ada (idempotent guard)
+        if row["name"].lower().strip() in exist_names_lower:
+            continue
         dists = haversine_m(row["latitude"], row["longitude"], exist_lat, exist_lon)
         if dists.min() > OVERLAP_RADIUS_M:
             new_venues.append(row)
