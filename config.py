@@ -3,7 +3,7 @@
 # Bounding box Jakarta (south, west, north, east) -> fallback kalau area OSM gagal.
 # CATATAN: bbox persegi overlap sebagian Bekasi/Depok/Tangerang. Filter utama
 # pakai AREA_RELATION (boundary administratif asli) di build_query().
-JAKARTA_BBOX = (-6.40, 106.72, -6.08, 107.00)  # batas barat diperketat ke 106.72 (batas DKI daratan)
+JAKARTA_BBOX = (-6.37, 106.725, -6.08, 107.00)  # diperketat: selatan -6.37, barat 106.725
 
 # Boundary administratif DKI Jakarta (admin_level=4) di Overpass, dicari via
 # tag name+admin_level (bukan hardcode relation id -> lebih robust).

@@ -17,7 +17,9 @@ import sys
 import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.dirname(__file__))
 import config
+from dki_boundary import load_dki_polygon, is_in_dki
 
 
 def main():
@@ -31,12 +33,10 @@ def main():
     mask_blacklist = name_lower.isin(blacklist_lower)
     removed = df.loc[mask_blacklist, "name"].tolist()
 
-    # Filter koordinat: buang venue di luar bbox DKI Jakarta
-    south, north = config.JAKARTA_BBOX[0], config.JAKARTA_BBOX[2]
-    west, east = config.JAKARTA_BBOX[1], config.JAKARTA_BBOX[3]
-    mask_outside = ~(
-        (df["latitude"] >= south) & (df["latitude"] <= north) &
-        (df["longitude"] >= west) & (df["longitude"] <= east)
+    # Filter koordinat: buang venue di luar polygon administratif DKI Jakarta
+    dki_poly = load_dki_polygon()
+    mask_outside = ~df.apply(
+        lambda r: is_in_dki(r["latitude"], r["longitude"], dki_poly), axis=1
     )
     outside_names = df.loc[mask_outside & ~mask_blacklist, "name"].tolist()
 
