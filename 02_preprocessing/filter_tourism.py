@@ -51,6 +51,15 @@ def main():
     if blacklisted:
         print(f"  dibuang: {blacklisted}")
 
+    # Dedupe nama exact: keep row dengan checkin_count tertinggi
+    n_before_dedup = len(filtered)
+    filtered = (filtered.sort_values("checkin_count", ascending=False)
+                .drop_duplicates(subset=["name"], keep="first")
+                .reset_index(drop=True))
+    n_after_dedup = len(filtered)
+    print(f"Setelah dedupe nama exact (keep checkin_count tertinggi): "
+          f"{n_after_dedup} ({n_before_dedup - n_after_dedup} duplikat dibuang)")
+
     print("\nDistribusi kategori (final):")
     print(filtered["venue_category"].value_counts().to_string())
 

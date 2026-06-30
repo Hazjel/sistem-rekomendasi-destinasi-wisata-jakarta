@@ -88,7 +88,7 @@ STEPS_NAME_BLACKLIST = [
     "ivan's heart",
     "rawasari barat",
     "ccf ( kebudayaan perancis )",
-    # Batch 2: spot-check manual per kategori
+    # Batch 2: spot-check manual per kategori + venue checkin_count rendah/bukan wisata
     # Monument / Landmark
     "percetakan negara republik indonesia",
     "gedung koni dki",
@@ -139,6 +139,8 @@ STEPS_NAME_BLACKLIST = [
     "dwidaya tour",
     "gallery garuda indonesia",
     "mnc travel and services, highend building lt. 1",
+    # checkin_count=1, nama informal bukan destinasi wisata proper
+    "pik long beach",
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
