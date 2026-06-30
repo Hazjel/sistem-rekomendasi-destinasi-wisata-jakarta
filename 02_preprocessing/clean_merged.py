@@ -31,6 +31,13 @@ def main():
     name_lower = df["name"].str.lower().fillna("")
 
     mask_blacklist = name_lower.isin(blacklist_lower)
+
+    # Lindungi venue STEPS (checkin_count > 0) dari blacklist collision —
+    # kasus: "ancol beach" blacklist match "Ancol Beach" (247 checkin) juga.
+    # Venue dengan checkin_count > 0 berasal dari STEPS (data nyata), bukan noise.
+    mask_has_checkin = df["checkin_count"].fillna(0) > 0
+    mask_blacklist = mask_blacklist & ~mask_has_checkin
+
     removed = df.loc[mask_blacklist, "name"].tolist()
 
     # Filter koordinat: buang venue di luar polygon administratif DKI Jakarta

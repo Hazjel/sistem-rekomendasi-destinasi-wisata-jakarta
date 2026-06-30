@@ -281,6 +281,13 @@ STEPS_NAME_BLACKLIST = [
     "taman lumba-lumba",          # sub-venue Ancol tanpa rating resmi
     "pentas lumba2, paus putih, dan singa laut",  # duplikat/sub-venue Ancol
     "beach pool ancol",           # kolam renang, bukan destinasi mandiri
+    # Batch 7: duplikat pantai + bukan destinasi wisata mandiri
+    # CATATAN: "ancol beach" lowercase match "Ancol Beach" juga — handle via venue_id di clean_merged
+    "pantai ancol",               # duplikat, 0 checkin, NaN status
+    "dermaga one - ancol",        # dermaga bukan destinasi pantai wisata
+    "puri marina club house",     # fasilitas privat club house
+    "ancol bay city, north jakarta",  # nama kawasan bukan destinasi pantai
+    "marunda beach",              # 0 checkin, NaN status, tidak terverifikasi
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
