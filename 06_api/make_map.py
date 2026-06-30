@@ -1,8 +1,13 @@
 """
-Visualisasikan venues_enriched.csv ke peta interaktif DKI Jakarta.
+Visualisasikan merged_venues_enriched.csv ke peta interaktif DKI Jakarta.
 
 Output: data/map_jakarta.html (buka di browser)
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 import pandas as pd
 import folium
 from folium.plugins import MarkerCluster
@@ -23,7 +28,7 @@ def category_color(cat):
 
 
 def main():
-    df = pd.read_csv(config.ENRICHED_CSV)
+    df = pd.read_csv(config.MERGED_VENUES_ENRICHED_CSV)
 
     center = [df["latitude"].mean(), df["longitude"].mean()]
     m = folium.Map(location=center, zoom_start=11, tiles="OpenStreetMap")
@@ -34,7 +39,7 @@ def main():
             f"<b>{row['name']}</b><br>"
             f"Kategori: {row['venue_category']}<br>"
             f"Jam buka: {row.get('Senin_buka', '-')}–{row.get('Senin_tutup', '-')} (Senin)<br>"
-            f"Pengunjung/minggu: {row.get('unique_visitors', '-')}<br>"
+            f"Rating: {row.get('google_rating', '-')} ({row.get('google_rating_count', '-')} ulasan)<br>"
             f"<a href='{row.get('References', '#')}' target='_blank'>Referensi</a>"
         )
         folium.CircleMarker(

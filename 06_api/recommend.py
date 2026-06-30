@@ -4,12 +4,17 @@ Engine rekomendasi HYBRID = content-based + geo + popularity + time-of-week.
 Skor akhir per kandidat venue:
     score = w_sim * similarity_konten
           + w_geo * kedekatan_jarak
-          + w_pop * popularitas (visitor ternormalisasi)
+          + w_pop * popularitas (google_rating ternormalisasi)
           + w_day * keramaian_hari_terpilih
 
 Tanpa riwayat user (cold-start friendly). Turis kasih: lokasi (lat/lon),
 opsional kategori favorit & hari kunjungan -> dapat top-N destinasi.
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -34,13 +39,21 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 class Recommender:
-    def __init__(self, csv_path=config.ENRICHED_CSV):
+    def __init__(self, csv_path=None):
+        if csv_path is None:
+            csv_path = config.MERGED_VENUES_ENRICHED_CSV
         self.df = pd.read_csv(csv_path)
-        # vektor konten dari kategori (bisa ditambah nama/tag bila ada).
-        self._tfidf = TfidfVectorizer(token_pattern=r"[^:]+")
-        self._mat = self._tfidf.fit_transform(self.df["venue_category"])
-        # popularitas ternormalisasi 0..1.
-        self.df["_pop"] = minmax_scale(self.df["unique_visitors"])
+        # Vektor konten: gabung kategori + deskripsi Google (bila ada) untuk TF-IDF
+        texts = (self.df["venue_category"].fillna("") + " " +
+                 self.df.get("description", pd.Series([""] * len(self.df))).fillna(""))
+        self._tfidf = TfidfVectorizer(token_pattern=r"[^:\s]+")
+        self._mat = self._tfidf.fit_transform(texts)
+        # Popularitas: pakai google_rating (0-5) ternormalisasi; fallback 0
+        pop_raw = pd.to_numeric(
+            self.df.get("google_rating", pd.Series([0] * len(self.df))),
+            errors="coerce"
+        ).fillna(0)
+        self.df["_pop"] = minmax_scale(pop_raw)
 
     def recommend(self, lat, lon, category=None, day=None,
                   max_km=25.0, top_n=10, only_open=False):
@@ -78,8 +91,9 @@ class Recommender:
         if only_open and day in DAYS:
             out = out[out["jam_buka"].str.split(" - ").str[0] != "Tutup"]
         cols = ["venue_id", "name", "venue_category", "distance_km",
-                "jam_buka", "unique_visitors", "time_spent", "References", "score"]
-        return out.sort_values("score", ascending=False).head(top_n)[cols]
+                "jam_buka", "google_rating", "google_rating_count", "References", "score"]
+        avail_cols = [c for c in cols if c in out.columns]
+        return out.sort_values("score", ascending=False).head(top_n)[avail_cols]
 
 
 if __name__ == "__main__":

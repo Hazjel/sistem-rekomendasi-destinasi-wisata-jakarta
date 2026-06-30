@@ -1,9 +1,16 @@
 """
-REST API serving rekomendasi. Jalankan:
+REST API serving rekomendasi. Jalankan dari folder 06_api/:
     uvicorn api:app --reload
+Atau dari root project:
+    uvicorn 06_api.api:app --reload
 Lalu:
-    GET /recommend?lat=-6.1754&lon=106.8272&category=tourism:museum&day=Sabtu&top_n=10
+    GET /recommend?lat=-6.1754&lon=106.8272&category=Museum&day=Sabtu&top_n=10
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from fastapi import FastAPI, Query
 
 from recommend import Recommender
