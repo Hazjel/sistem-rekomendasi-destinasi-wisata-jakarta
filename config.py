@@ -275,6 +275,12 @@ STEPS_NAME_BLACKLIST = [
     "somewhere beach",
     "ruang bougenville",
     "yayasan dharma kasih sejahtera",
+    # Batch 6: venue kualitas rendah — militer/terbatas, sub-venue tanpa rating
+    "taman kopassus cijantung",   # area militer, 3.2★, 1 checkin
+    "4d pyramids",                # tidak ada rating, wahana lama
+    "taman lumba-lumba",          # sub-venue Ancol tanpa rating resmi
+    "pentas lumba2, paus putih, dan singa laut",  # duplikat/sub-venue Ancol
+    "beach pool ancol",           # kolam renang, bukan destinasi mandiri
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
