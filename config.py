@@ -141,6 +141,59 @@ STEPS_NAME_BLACKLIST = [
     "mnc travel and services, highend building lt. 1",
     # checkin_count=1, nama informal bukan destinasi wisata proper
     "pik long beach",
+    # Batch 3: spot-check sesi 2026-06-30 — non-wisata, luar jakarta, ambigu
+    # kantor pemerintah
+    "bpkp dki jakarta i",
+    # salon/kecantikan bukan destinasi wisata
+    "lellidewi house of beauty & wellness",
+    # gedung komersial
+    "gedung cipta niaga",
+    "gedung puspa pesona",
+    "pt ciputra sentra. gedung mal ciputra jakarta lantai p1, jakarta.",
+    "dci",
+    # kolam renang/fasilitas hotel bukan destinasi mandiri
+    "beach pool",
+    "swimming pool",
+    "kolam tenlis",
+    # nama jalan/lokasi bukan destinasi
+    "duren tiga",
+    "jalan zamrud",
+    "jbt pancoran - tegal parang",
+    "muara baru",
+    # tempat ibadah biasa (bukan destinasi wisata religi bersejarah)
+    "gbi golden truly",
+    "mesjid baiturrahman ancol",
+    # venue di luar Jakarta
+    "keraton solo",
+    "lembang lake",
+    "water sport tanjung benoa",
+    "klenteng agung sam poo kong semarang",
+    "prambanan temple",
+    # rumah sakit
+    "rsb alvernia agusta",
+    # nama ambigu / tidak dikenal sebagai destinasi wisata jakarta
+    "my black hawk",
+    "observatory",
+    "gelanggang remaja",
+    "pantai bende",
+    "markas batman",
+    "deep blue sea",
+    "coloseum",
+    "sunday jazz festival",
+    "faiz rayyan's private beach",
+    "pos 8 port of tg. priok",
+    "kedai acoy",
+    "monkeymickey",
+    "the bukit",
+    "pantai mabak",
+    "geography room",
+    "greenbay's sea",
+    "pgc \"penghuni terminal angker\"",
+    "ody dive center - pramuka island",
+    "negara api",
+    "somewhere beach",
+    "ruang bougenville",
+    "yayasan dharma kasih sejahtera",
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
