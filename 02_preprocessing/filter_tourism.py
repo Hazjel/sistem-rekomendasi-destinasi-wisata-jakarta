@@ -23,8 +23,12 @@ def main():
     print("Top 10 kategori (sebelum filter):")
     print(df["venue_category"].value_counts().head(10).to_string())
 
-    filtered = df[df["venue_category"].isin(config.STEPS_TOURISM_CATEGORIES)].copy()
+    whitelist_lower = {w.lower() for w in config.STEPS_TOURISM_WHITELIST}
+    mask_whitelist = df["name"].str.lower().isin(whitelist_lower)
+    mask_cat = df["venue_category"].isin(config.STEPS_TOURISM_CATEGORIES)
+    filtered = df[mask_cat | mask_whitelist].copy()
     n_after_cat = len(filtered)
+    print(f"Venue whitelist nama (ikonik non-tourism kategori): {mask_whitelist.sum()}")
     print(f"\nVenue setelah filter kategori wisata: {n_after_cat} "
           f"({n_after_cat / n_before:.1%} dari total)")
 

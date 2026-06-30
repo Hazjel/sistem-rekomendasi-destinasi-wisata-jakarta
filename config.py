@@ -67,6 +67,14 @@ STEPS_TOURISM_CATEGORIES = [
     "Tourist Information Center", "Zoo",
 ]
 
+# Venue ikonik yang kategori Foursquare-nya bukan tourism (Mosque/Church/dll)
+# tapi jelas destinasi wisata Jakarta -- dimasukkan regardless kategori
+STEPS_TOURISM_WHITELIST = [
+    "Masjid Istiqlal",           # masjid terbesar Asia Tenggara, 131 checkin
+    "Masjid Agung Sunda Kelapa", # masjid bersejarah Menteng, 84 checkin
+    "Gereja Katedral Jakarta",   # katedral neo-gotik 1901, 239 checkin
+]
+
 # Keyword exclude di nama venue (lowercase substring match) -- kurasi tahap 2
 # setelah whitelist kategori, buang sisa noise non-wisata yang masih lolos
 # (cth "Museum Mandiri" itu nama gedung bank, bukan museum nyata; "Lampu
