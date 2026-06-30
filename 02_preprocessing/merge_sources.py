@@ -45,43 +45,55 @@ def find_nearest_osm_idx(lat, lon, osm_lat, osm_lon, radius_m):
 
 def main():
     steps = pd.read_csv(config.STEPS_FILTERED_CSV)
-    osm = pd.read_csv(config.ENRICHED_CSV)
     n_steps = len(steps)
     print(f"Venue Massive-STEPS (filtered): {n_steps}")
-    print(f"Venue OSM (enriched, kandidat match): {len(osm)}")
-
-    osm_lat = osm["latitude"].to_numpy()
-    osm_lon = osm["longitude"].to_numpy()
 
     DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
     day_cols = [f"{d}_buka" for d in DAYS_ID] + [f"{d}_tutup" for d in DAYS_ID]
 
-    matched_cols = {c: [] for c in ["osm_url", "References", "hours_source"] + day_cols}
-    n_match = 0
-    for _, row in steps.iterrows():
-        idx = find_nearest_osm_idx(row["latitude"], row["longitude"],
-                                    osm_lat, osm_lon, config.MERGE_RADIUS_M)
-        if idx is not None:
-            n_match += 1
-            nearest = osm.iloc[idx]
-            matched_cols["osm_url"].append(nearest.get("osm_url", "") or "")
-            matched_cols["References"].append(nearest.get("References", "") or "")
-            matched_cols["hours_source"].append(nearest.get("hours_source", "default"))
-            for dc in day_cols:
-                matched_cols[dc].append(nearest.get(dc, "Tutup") or "Tutup")
-        else:
-            matched_cols["osm_url"].append("")
-            matched_cols["References"].append("")
-            matched_cols["hours_source"].append("default")
-            for dc in day_cols:
-                matched_cols[dc].append("Tutup")
+    # OSM enriched dipakai untuk osm_url + References saja.
+    # Kalau file tidak ada (sudah dihapus), skip OSM matching —
+    # jam buka diisi enrich_hours_google.py di step berikutnya.
+    if os.path.exists(config.ENRICHED_CSV):
+        osm = pd.read_csv(config.ENRICHED_CSV)
+        print(f"Venue OSM (enriched, kandidat match): {len(osm)}")
+        osm_lat = osm["latitude"].to_numpy()
+        osm_lon = osm["longitude"].to_numpy()
 
-    for c, vals in matched_cols.items():
-        steps[c] = vals
+        matched_cols = {c: [] for c in ["osm_url", "References", "hours_source"] + day_cols}
+        n_match = 0
+        for _, row in steps.iterrows():
+            idx = find_nearest_osm_idx(row["latitude"], row["longitude"],
+                                        osm_lat, osm_lon, config.MERGE_RADIUS_M)
+            if idx is not None:
+                n_match += 1
+                nearest = osm.iloc[idx]
+                matched_cols["osm_url"].append(nearest.get("osm_url", "") or "")
+                matched_cols["References"].append(nearest.get("References", "") or "")
+                matched_cols["hours_source"].append(nearest.get("hours_source", "default"))
+                for dc in day_cols:
+                    matched_cols[dc].append(nearest.get(dc, "Tutup") or "Tutup")
+            else:
+                matched_cols["osm_url"].append("")
+                matched_cols["References"].append("")
+                matched_cols["hours_source"].append("default")
+                for dc in day_cols:
+                    matched_cols[dc].append("Tutup")
 
-    pct_match = n_match / n_steps if n_steps else 0
-    print(f"\nBerhasil match ke OSM: {n_match}/{n_steps} ({pct_match:.1%})")
-    print(f"Tidak match (kolom OSM default/kosong): {n_steps - n_match}")
+        for c, vals in matched_cols.items():
+            steps[c] = vals
+
+        pct_match = n_match / n_steps if n_steps else 0
+        print(f"\nBerhasil match ke OSM: {n_match}/{n_steps} ({pct_match:.1%})")
+        print(f"Tidak match (kolom OSM default/kosong): {n_steps - n_match}")
+    else:
+        print("venues_enriched.csv tidak ada — skip OSM matching.")
+        print("Jam buka akan diisi enrich_hours_google.py.")
+        steps["osm_url"] = ""
+        steps["References"] = ""
+        steps["hours_source"] = "default"
+        for dc in day_cols:
+            steps[dc] = "Tutup"
 
     os.makedirs(os.path.dirname(config.MERGED_VENUES_CSV), exist_ok=True)
     steps.to_csv(config.MERGED_VENUES_CSV, index=False)

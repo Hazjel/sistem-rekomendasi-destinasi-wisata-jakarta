@@ -157,7 +157,7 @@ def main():
     n_ok, n_miss, n_cached = 0, 0, 0
 
     for i, (idx, row) in enumerate(df.iterrows()):
-        cache_path = os.path.join(CACHE_DIR, f"{int(row['venue_id'])}.json")
+        cache_path = os.path.join(CACHE_DIR, f"{str(row['venue_id']).replace('/', '_')}.json")
 
         if os.path.exists(cache_path):
             with open(cache_path, encoding="utf-8") as f:
