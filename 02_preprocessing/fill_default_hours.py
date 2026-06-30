@@ -52,9 +52,13 @@ def main():
     df = pd.read_csv(config.MERGED_VENUES_ENRICHED_CSV)
     buka_cols = [f"{d}_buka" for d in DAYS_ID]
 
-    mask_all_tutup = (df[buka_cols] == "Tutup").all(axis=1)
+    # Catch 2 kasus:
+    # 1. Semua hari Tutup
+    # 2. Mayoritas hari Tutup (>=5) — bug cache Google: 1-2 hari ada data tapi sisanya kosong
+    n_tutup_per_row = (df[buka_cols] == "Tutup").sum(axis=1)
+    mask_all_tutup = n_tutup_per_row >= 5
     n_before = mask_all_tutup.sum()
-    print(f"Venue semua hari Tutup (sebelum): {n_before}")
+    print(f"Venue >=5 hari Tutup (sebelum): {n_before}")
 
     n_filled = 0
     for idx in df[mask_all_tutup].index:
@@ -68,11 +72,11 @@ def main():
         df.at[idx, "hours_source"] = "default_category"
         n_filled += 1
 
-    mask_still_tutup = (df[buka_cols] == "Tutup").all(axis=1)
+    mask_still_tutup = (df[buka_cols] == "Tutup").sum(axis=1) >= 5
     n_after = mask_still_tutup.sum()
 
     print(f"Diisi default per kategori: {n_filled}")
-    print(f"Venue semua hari Tutup (sesudah): {n_after}")
+    print(f"Venue >=5 hari Tutup (sesudah): {n_after}")
     if n_after > 0:
         print("Masih Tutup (kategori tidak ada di DEFAULT_HOURS):")
         print(df[mask_still_tutup][["name", "venue_category"]].to_string())
