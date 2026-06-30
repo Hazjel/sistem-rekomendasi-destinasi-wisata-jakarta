@@ -93,20 +93,29 @@ def search_place_id(name, lat, lon, api_key):
 
 
 def get_place_details(place_id, api_key):
-    """Place Details -> jam buka + rating + deskripsi + dll. Return dict atau None."""
+    """Place Details -> jam buka + rating + deskripsi + field wisata lengkap."""
     url = f"{BASE}/places/{place_id}"
     headers = {
         "X-Goog-Api-Key": api_key,
         "X-Goog-FieldMask": ",".join([
             "regularOpeningHours",
+            "currentOpeningHours",
             "rating",
             "userRatingCount",
             "priceLevel",
             "editorialSummary",
             "types",
+            "primaryType",
             "websiteUri",
             "goodForChildren",
             "nationalPhoneNumber",
+            "businessStatus",
+            "accessibilityOptions",
+            "parkingOptions",
+            "paymentOptions",
+            "restroom",
+            "photos",
+            "addressComponents",
         ]),
     }
     try:
@@ -115,8 +124,9 @@ def get_place_details(place_id, api_key):
             return None
         data = r.json()
 
-        # Parse jam buka
-        periods = data.get("regularOpeningHours", {}).get("periods", [])
+        # Parse jam buka (regularOpeningHours, fallback currentOpeningHours)
+        oh_data = data.get("regularOpeningHours") or data.get("currentOpeningHours") or {}
+        periods = oh_data.get("periods", [])
         hours = {d: None for d in DAYS_ID}
         for p in periods:
             day_num = p.get("open", {}).get("day")
@@ -128,6 +138,24 @@ def get_place_details(place_id, api_key):
             ch, cm = c.get("hour", 0), c.get("minute", 0)
             hours[day_id] = (f"{oh:02d}:{om:02d}", f"{ch:02d}:{cm:02d}")
 
+        # Parse addressComponents -> ambil sublocality (kecamatan) dan locality (kota)
+        sublocality, locality = None, None
+        for comp in data.get("addressComponents", []):
+            types = comp.get("types", [])
+            if "sublocality_level_1" in types or "sublocality" in types:
+                sublocality = comp.get("longText")
+            if "locality" in types:
+                locality = comp.get("longText")
+
+        # Foto pertama (URL thumbnail)
+        photos = data.get("photos", [])
+        photo_ref = photos[0].get("name") if photos else None
+
+        # Accessibility
+        acc = data.get("accessibilityOptions", {})
+        parking = data.get("parkingOptions", {})
+        payment = data.get("paymentOptions", {})
+
         return {
             "hours": hours,
             "rating": data.get("rating"),
@@ -135,9 +163,18 @@ def get_place_details(place_id, api_key):
             "price_level": data.get("priceLevel"),
             "description": data.get("editorialSummary", {}).get("text"),
             "types": data.get("types", []),
+            "primary_type": data.get("primaryType"),
             "website": data.get("websiteUri"),
             "phone": data.get("nationalPhoneNumber"),
             "good_for_children": data.get("goodForChildren"),
+            "business_status": data.get("businessStatus"),
+            "wheelchair_accessible": acc.get("wheelchairAccessibleEntrance"),
+            "has_parking": any(parking.values()) if parking else None,
+            "accepts_cashless": payment.get("acceptsCreditCards") or payment.get("acceptsDebitCards"),
+            "has_restroom": data.get("restroom"),
+            "photo_ref": photo_ref,
+            "sublocality": sublocality,
+            "locality": locality,
         }
     except Exception:
         return None
@@ -190,10 +227,18 @@ def main():
             df.at[idx, "description"] = details.get("description")
             df.at[idx, "good_for_children"] = details.get("good_for_children")
             df.at[idx, "google_types"] = ",".join(details.get("types", []))
+            df.at[idx, "primary_type"] = details.get("primary_type")
+            df.at[idx, "business_status"] = details.get("business_status")
+            df.at[idx, "wheelchair_accessible"] = details.get("wheelchair_accessible")
+            df.at[idx, "has_parking"] = details.get("has_parking")
+            df.at[idx, "accepts_cashless"] = details.get("accepts_cashless")
+            df.at[idx, "has_restroom"] = details.get("has_restroom")
+            df.at[idx, "photo_ref"] = details.get("photo_ref")
+            df.at[idx, "sublocality"] = details.get("sublocality")
+            df.at[idx, "locality"] = details.get("locality")
             if details.get("website") and not df.at[idx, "References"]:
                 df.at[idx, "References"] = details.get("website")
             # Google kadang return response tapi jam parsial (< 2 hari terisi)
-            # -> venue outdoor/monumen yang tidak punya jam formal di Google
             if filled_days < 2:
                 apply_default_hours(df, idx)
         else:
