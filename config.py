@@ -31,7 +31,8 @@ TOURISM_FILTERS = {
 }
 
 # File output (OSM venue, pipeline 01_data_collection -> 02_preprocessing).
-RAW_CSV = "data/raw/venues_raw.csv"
+RAW_CSV = "data/raw/venues_osm_raw.csv"          # mentah dari Overpass (collect_osm.py, no dedupe)
+CLEAN_CSV = "data/processed/venues_osm_clean.csv" # setelah dedupe + cluster-dedupe (clean_osm.py)
 ENRICHED_CSV = "data/processed/venues_enriched.csv"
 
 # Hotel (titik berangkat/pulang itinerary) -- dipisah dari venue wisata krn

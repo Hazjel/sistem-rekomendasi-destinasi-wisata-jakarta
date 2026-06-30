@@ -195,7 +195,7 @@ def dedupe_clusters(rows, radius_m=700):
 
 
 def main():
-    os.makedirs(os.path.dirname(config.RAW_CSV), exist_ok=True)
+    os.makedirs("data/raw", exist_ok=True)
     all_elements = []
     for key, values in config.TOURISM_FILTERS.items():
         print(f"Query Overpass: {key} ...")
@@ -211,19 +211,10 @@ def main():
         els = data.get("elements", [])
         print(f"  {len(els)} elemen.")
         all_elements.extend(els)
-        time.sleep(8)  # jeda sopan, hindari 429 rate-limit
-    rows = dedupe(parse(all_elements))
-    print(f"Dapat {len(rows)} venue unik (sebelum cluster-dedupe).")
+        time.sleep(8)
 
-    # Cluster-dedupe hanya utk kategori tourism/leisure/historic -> venue besar
-    # (cth Monas) kadang punya >1 entitas OSM (gerbang, taman, monumen) yg
-    # sebenarnya 1 destinasi. amenity (masjid/pasar) jumlahnya besar & jarang
-    # overlap penamaan, skip biar tetap cepat (hindari O(n^2) di >5000 row).
-    clusterable = [r for r in rows if not r["venue_category"].startswith("amenity:")]
-    rest = [r for r in rows if r["venue_category"].startswith("amenity:")]
-    clustered = dedupe_clusters(clusterable)
-    rows = clustered + rest
-    print(f"Dapat {len(rows)} venue unik (setelah cluster-dedupe).")
+    rows = parse(all_elements)
+    print(f"Total elemen dari Overpass: {len(rows)} (belum dedupe, mentah)")
 
     with open(config.RAW_CSV, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
@@ -232,7 +223,7 @@ def main():
                            "wikipedia", "wikidata", "osm_url", "maps_url"])
         writer.writeheader()
         writer.writerows(rows)
-    print(f"Tersimpan -> {config.RAW_CSV}")
+    print(f"Tersimpan mentah -> {config.RAW_CSV}")
 
 
 if __name__ == "__main__":

@@ -103,7 +103,7 @@ def main():
     rng = np.random.default_rng(config.RANDOM_SEED)
     fill = {c: "" for c in ["opening_hours", "website", "wikipedia",
                             "wikidata", "osm_url", "maps_url"]}
-    df = pd.read_csv(config.RAW_CSV).fillna(fill)
+    df = pd.read_csv(config.CLEAN_CSV).fillna(fill)
 
     visitors, refs, spent, sources = [], [], [], []
     day_cols = {f"{d}_buka": [] for d in DAYS_ID}
