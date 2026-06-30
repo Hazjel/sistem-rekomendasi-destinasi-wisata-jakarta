@@ -284,10 +284,29 @@ STEPS_NAME_BLACKLIST = [
     # Batch 7: duplikat pantai + bukan destinasi wisata mandiri
     # CATATAN: "ancol beach" lowercase match "Ancol Beach" juga — handle via venue_id di clean_merged
     "pantai ancol",               # duplikat, 0 checkin, NaN status
-    "dermaga one - ancol",        # dermaga bukan destinasi pantai wisata
     "puri marina club house",     # fasilitas privat club house
     "ancol bay city, north jakarta",  # nama kawasan bukan destinasi pantai
     "marunda beach",              # 0 checkin, NaN status, tidak terverifikasi
+    # Batch 8: audit koordinat 2026-06-30 — koordinat salah jauh, duplikat, venue tidak valid
+    "tidung beach",               # koordinat di Pluit bukan Kepulauan Seribu
+    "citra playland mall ciputra",# Google match Tangerang, venue tidak ditemukan di Jakarta
+    "pentas lumba2, paus putih, dan singa laut",  # tidak ditemukan di Google Places
+    "ruangan proklamasi (monas)", # sub-atraksi Monas, bukan venue mandiri
+    "ruang museum sejarah",       # duplikat Museum Fatahillah dengan koordinat salah
+    "underwater show",            # koordinat salah, duplikat atraksi Ancol
+    "pulomas historical site",    # Google match museum lain, venue tidak terverifikasi
+    "pulomas x-venture mall",     # venue tidak ditemukan di Google Places
+    "angsana theme park",         # venue tidak ditemukan di lokasi dataset
+    "amazing world",              # Google match venue berbeda 7km
+    "kmb dharmayana",             # koordinat salah 3.6km, Google match vihara lain
+    "vihara dutamas thien zhen",  # koordinat salah 5.7km
+    "vihara nirwana maitreya",    # koordinat salah 13km
+    "pegangsaan timur 56",        # nama jalan bukan venue wisata (ada Taman Proklamator)
+    "museum alkitab indonesia",   # koordinat salah 8km
+    "pantai muara karang",        # koordinat salah 11km
+    "beach pool ancol",           # koordinat salah 10km, kolam renang bukan wisata
+    "lollipop gandaria city",     # Google match Senayan bukan Gandaria, duplikat
+    "world of reptile",           # Google match toko reptil bukan destinasi wisata
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +

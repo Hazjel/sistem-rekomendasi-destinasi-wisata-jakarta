@@ -78,6 +78,23 @@ def main():
 
     mask_drop = mask_blacklist | mask_outside | mask_closed | mask_small_temple
     df_clean = df[~mask_drop].copy().reset_index(drop=True)
+
+    # Fix koordinat yang salah (terdeteksi via audit reverse geocode)
+    COORD_FIXES = {
+        "pura aditya jaya":         (-6.1958, 106.8752),  # Rawamangun, bukan Monas area
+        "taman menteng":            (-6.1964, 106.8293),  # Menteng Park, bukan Jatinegara
+        "tugu utama":               (-6.1276, 106.9180),  # Tugu Koja, bukan Jatinegara
+        "sunda kelapa - batavia":   (-6.1194, 106.8121),  # Pelabuhan Sunda Kelapa
+        "lubang buaya":             (-6.2903, 106.9086),  # Monumen Pancasila Sakti
+        "taman kopassus cijantung": (-6.3092, 106.8591),  # Koordinat lebih akurat
+        "dermaga one - ancol":      (-6.1198, 106.8293),  # Dermaga Marina Ancol
+    }
+    for name_fix, (new_lat, new_lon) in COORD_FIXES.items():
+        idx = df_clean[df_clean["name"].str.lower().str.strip() == name_fix].index
+        if len(idx) > 0:
+            df_clean.loc[idx, "latitude"] = new_lat
+            df_clean.loc[idx, "longitude"] = new_lon
+
     n_after = len(df_clean)
 
     print(f"Dibuang (blacklist): {mask_blacklist.sum()}")
