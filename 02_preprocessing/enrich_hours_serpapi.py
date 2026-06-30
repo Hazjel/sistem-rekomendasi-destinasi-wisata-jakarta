@@ -58,6 +58,10 @@ def parse_hours(hours_list):
             if val.lower() in ("closed", "tutup"):
                 result[day_id] = None
                 continue
+            if "open 24 hours" in val.lower():
+                result[day_id] = ("00:00", "23:59")
+                continue
+                continue
             parts = re.split(r"[–\-]", val, maxsplit=1)
             if len(parts) == 2:
                 buka = parse_time(parts[0])
