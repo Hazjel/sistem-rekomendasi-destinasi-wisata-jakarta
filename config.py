@@ -141,6 +141,24 @@ STEPS_NAME_BLACKLIST = [
     "mnc travel and services, highend building lt. 1",
     # checkin_count=1, nama informal bukan destinasi wisata proper
     "pik long beach",
+    # Batch 4: spot-check dari Google Places tambahan — perusahaan, toko, makam, kolam renang
+    "pt pembangunan jaya ancol tbk",
+    "fantasi rekreasindo. pt tsm",
+    "closed",
+    "hic swimming pool",
+    "hs agung swimming pool",
+    "aquascaper",
+    "huk aquatic",
+    "dhika aquarium",
+    "sarang sugar glider ii",
+    "buku langka tmii",
+    "situ cipondoh",
+    "waduk haji dogol",
+    "pgb (pulo gebang basuri)",
+    "cagar buah condet",
+    "masjid jami' at-taqwa brimob",
+    "makam pangeran ayarif datuk banjir",
+    "makom kramat guru abdurahman dan pangeran salim",
     # Batch 3: spot-check sesi 2026-06-30 — non-wisata, luar jakarta, ambigu
     # kantor pemerintah
     "bpkp dki jakarta i",
