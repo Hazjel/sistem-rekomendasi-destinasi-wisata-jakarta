@@ -82,11 +82,63 @@ STEPS_NAME_EXCLUDE_KEYWORDS = [
 # Blacklist nama eksplisit -- venue yang lolos keyword-exclude tapi jelas bukan
 # destinasi wisata (terdeteksi via spot-check manual).
 STEPS_NAME_BLACKLIST = [
+    # Batch 1: lolos filter awal, jelas bukan destinasi wisata
     "lobby",
     "ruang besar",
     "ivan's heart",
     "rawasari barat",
     "ccf ( kebudayaan perancis )",
+    # Batch 2: spot-check manual per kategori
+    # Monument / Landmark
+    "percetakan negara republik indonesia",
+    "gedung koni dki",
+    "vice presidential palace",
+    "gedung veteran ri",
+    "adelwin landmark",
+    "national trust for historic preservation",
+    "veterans",
+    # Art Museum
+    "pertokoan globe pasar baru",
+    # Historic Site
+    "al-azhar",
+    "makam wakaf sebrang",
+    "jembatan bkt bambu duri",
+    "traffic light taman suropati",
+    "jl. raya tanjung barat selatan gg. 100",
+    "pancoran.tugu",
+    "1.5 x 1.5 thinking room",
+    # Zoo
+    "pasar ikan kartini",
+    "p l a y g r o u n d",
+    "pemancingan",
+    "kandang rusa",
+    "kandang macan taman safari indonesia",
+    "salmon's new aquatic site",
+    # Theme Park
+    "amazone - itc permata hijau",
+    "patung kuda laut",
+    "jogging track rasuna",
+    "kongkoow place of ilham's",
+    "air mancur (depan indosat)",
+    "al net",
+    "rumah-ku",
+    "emefer world",
+    "pintu gerbang utama",
+    "pintu masuk ancol",
+    "tebettimurdalam",
+    "the white [beach] party jakarta 2012",
+    "astrazania - jelajahi dunia astra 2012",
+    "dreamland",
+    "fus1on 2012",
+    "#fus1on2012",
+    "#glowinpassfour",
+    "iceberg xiv",
+    "tasyaldy toys",
+    "play house land",
+    # Tourist Information Center (semua travel agent, bukan destinasi)
+    "dwidaya tour",
+    "gallery garuda indonesia",
+    "mnc travel and services, highend building lt. 1",
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
