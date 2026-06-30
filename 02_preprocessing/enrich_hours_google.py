@@ -138,14 +138,16 @@ def get_place_details(place_id, api_key):
             ch, cm = c.get("hour", 0), c.get("minute", 0)
             hours[day_id] = (f"{oh:02d}:{om:02d}", f"{ch:02d}:{cm:02d}")
 
-        # Parse addressComponents -> ambil sublocality (kecamatan) dan locality (kota)
+        # Parse addressComponents -> kecamatan (level_4) dan kota (level_2)
+        # Google Places API v1 untuk Indonesia: pakai administrative_area_level_4
+        # (kecamatan), bukan sublocality/locality standar
         sublocality, locality = None, None
         for comp in data.get("addressComponents", []):
             types = comp.get("types", [])
-            if "sublocality_level_1" in types or "sublocality" in types:
-                sublocality = comp.get("longText")
-            if "locality" in types:
-                locality = comp.get("longText")
+            if "administrative_area_level_4" in types:
+                sublocality = comp.get("longText")  # kecamatan
+            elif "administrative_area_level_2" in types:
+                locality = comp.get("longText")     # kota/kabupaten
 
         # Foto pertama (URL thumbnail)
         photos = data.get("photos", [])
