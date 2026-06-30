@@ -50,11 +50,13 @@ _DKI_DARATAN = [
     (106.7700, -6.2800),
     (106.7700, -6.2500),  # Kebayoran Lama / Ciputat border
     # Barat (Cengkareng/Kalideres, batas Tangerang)
+    # Kalideres barat: lon~106.70-106.71 (Murugan Temple di lon=106.708)
     (106.7550, -6.2300),
     (106.7400, -6.2100),
-    (106.7250, -6.1900),
-    (106.7150, -6.1500),
-    (106.7100, -6.1200),
+    (106.7200, -6.1900),
+    (106.7050, -6.1700),  # Kalideres tengah
+    (106.7000, -6.1500),  # Kalideres barat
+    (106.7000, -6.1200),
     # Barat Laut kembali ke titik awal
     (106.7100, -6.0800),
 ]

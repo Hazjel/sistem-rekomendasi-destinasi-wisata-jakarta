@@ -204,7 +204,7 @@ def main():
     combined = pd.concat([existing, google_new], ignore_index=True)
 
     # Merge manual venues (venue yang ditambah manual, tidak ada di STEPS/OSM/Google batch)
-    MANUAL_CSV = "data/raw/manual_venues.csv"
+    MANUAL_CSV = "curated/manual_venues.csv"
     if os.path.exists(MANUAL_CSV):
         manual = pd.read_csv(MANUAL_CSV,
                              dtype={"sublocality": "object", "locality": "object",

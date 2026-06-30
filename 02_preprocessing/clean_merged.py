@@ -58,8 +58,7 @@ def main():
     # Filter vihara/temple kecil yang bukan destinasi wisata publik:
     # checkin_count < 5 DAN bukan tempat ibadah bersejarah/dikenal
     # Kecualikan venue yang ditambah manual (manual_venues.csv) — sudah dikurasi
-    MANUAL_CSV = os.path.join(os.path.dirname(config.MERGED_VENUES_ENRICHED_CSV),
-                              "..", "raw", "manual_venues.csv")
+    MANUAL_CSV = "curated/manual_venues.csv"
     manual_names = set()
     if os.path.exists(MANUAL_CSV):
         manual_df = pd.read_csv(MANUAL_CSV)
