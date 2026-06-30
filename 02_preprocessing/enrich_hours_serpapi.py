@@ -62,7 +62,7 @@ def parse_hours(hours_list):
                 result[day_id] = ("00:00", "23:59")
                 continue
                 continue
-            parts = re.split(r"[–\-]", val, maxsplit=1)
+            parts = re.split(r"[–—\-]", val, maxsplit=1)
             if len(parts) == 2:
                 buka = parse_time(parts[0])
                 tutup = parse_time(parts[1])
