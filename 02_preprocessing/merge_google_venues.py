@@ -180,8 +180,15 @@ def main():
     print("\nDistribusi kategori venue baru:")
     print(google_new["venue_category"].value_counts().to_string())
 
-    # Assign venue_id baru
-    google_new["venue_id"] = [f"google_{i:05d}" for i in range(len(google_new))]
+    # Assign venue_id baru — lanjutkan dari max yang sudah ada di existing
+    existing_google = existing[existing["venue_id"].astype(str).str.startswith("google_")]
+    max_gid = 0
+    for vid in existing_google["venue_id"]:
+        try:
+            max_gid = max(max_gid, int(str(vid).replace("google_", "")))
+        except ValueError:
+            pass
+    google_new["venue_id"] = [f"google_{max_gid + i + 1:05d}" for i in range(len(google_new))]
 
     # Pastikan kolom sesuai existing (isi kolom yang tidak ada dengan default)
     DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]

@@ -57,26 +57,40 @@ def estimate_duration_minutes(lat1, lon1, lat2, lon2):
 
 def main():
     df = pd.read_csv(config.CLUSTERED_VENUES_CSV)
+    df["latitude"] = pd.to_numeric(df["latitude"], errors="coerce")
+    df["longitude"] = pd.to_numeric(df["longitude"], errors="coerce")
+    df = df.dropna(subset=["latitude", "longitude"])
     print(f"Venue input (clustered): {len(df)}")
 
-    cache = {}
-    if os.path.exists(config.TIME_MATRIX_CSV):
-        prev = pd.read_csv(config.TIME_MATRIX_CSV)
-        for _, r in prev.iterrows():
-            cache[(r["venue_id_a"], r["venue_id_b"])] = (r["duration_minutes"], r["time_source"])
-        print(f"Cache ditemukan: {len(cache)} pasangan sudah dihitung sebelumnya.")
-
     pairs_to_compute = []
+    valid_pair_keys = set()
     for zone in sorted(df["zone_id"].unique()):
         zone_df = df[df["zone_id"] == zone]
         ids = zone_df["venue_id"].tolist()
-        pairs_to_compute.extend(itertools.combinations(ids, 2))
+        for pair in itertools.combinations(ids, 2):
+            pairs_to_compute.append(pair)
+            valid_pair_keys.add(pair)
+            valid_pair_keys.add((pair[1], pair[0]))
 
     print(f"Total pasangan dalam zone sama: {len(pairs_to_compute)}")
 
+    # Load cache — hanya pairs yang masih valid (dalam zone sama di dataset sekarang)
+    cache = {}
+    if os.path.exists(config.TIME_MATRIX_CSV):
+        prev = pd.read_csv(config.TIME_MATRIX_CSV)
+        n_stale = 0
+        for _, r in prev.iterrows():
+            key = (r["venue_id_a"], r["venue_id_b"])
+            if key in valid_pair_keys:
+                cache[key] = (r["duration_minutes"], r["time_source"])
+            else:
+                n_stale += 1
+        print(f"Cache ditemukan: {len(cache)} valid, {n_stale} stale (dibuang).")
+
     os.makedirs(os.path.dirname(config.TIME_MATRIX_CSV), exist_ok=True)
 
-    coord = df.set_index("venue_id")[["latitude", "longitude"]]
+    df = df.drop_duplicates(subset=["venue_id"])
+    coord = df.set_index("venue_id")[["latitude", "longitude"]].astype(float)
     rows = [{"venue_id_a": a, "venue_id_b": b, "duration_minutes": d, "time_source": s}
             for (a, b), (d, s) in cache.items()]
     n_osrm, n_fallback, n_cached = 0, 0, len(rows)
@@ -86,8 +100,8 @@ def main():
         key = (a, b)
         if key in cache or (b, a) in cache:
             continue  # sudah ada di rows lewat cache di atas
-        lat1, lon1 = coord.loc[a]
-        lat2, lon2 = coord.loc[b]
+        lat1, lon1 = float(coord.loc[a, "latitude"]), float(coord.loc[a, "longitude"])
+        lat2, lon2 = float(coord.loc[b, "latitude"]), float(coord.loc[b, "longitude"])
         dur = osrm_duration_minutes(lat1, lon1, lat2, lon2)
         if dur is not None:
             src = "osrm"
