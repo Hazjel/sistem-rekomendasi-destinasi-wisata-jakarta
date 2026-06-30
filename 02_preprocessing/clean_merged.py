@@ -31,7 +31,17 @@ def main():
     mask_blacklist = name_lower.isin(blacklist_lower)
     removed = df.loc[mask_blacklist, "name"].tolist()
 
-    df_clean = df[~mask_blacklist].copy().reset_index(drop=True)
+    # Filter koordinat: buang venue di luar bbox DKI Jakarta
+    south, north = config.JAKARTA_BBOX[0], config.JAKARTA_BBOX[2]
+    west, east = config.JAKARTA_BBOX[1], config.JAKARTA_BBOX[3]
+    mask_outside = ~(
+        (df["latitude"] >= south) & (df["latitude"] <= north) &
+        (df["longitude"] >= west) & (df["longitude"] <= east)
+    )
+    outside_names = df.loc[mask_outside & ~mask_blacklist, "name"].tolist()
+
+    mask_drop = mask_blacklist | mask_outside
+    df_clean = df[~mask_drop].copy().reset_index(drop=True)
     n_after = len(df_clean)
 
     print(f"Dibuang (blacklist): {mask_blacklist.sum()}")
@@ -39,9 +49,15 @@ def main():
         print("  Daftar yang dibuang:")
         for name in removed:
             print(f"    - {name}")
+    print(f"Dibuang (luar bbox DKI): {mask_outside.sum()}")
+    if outside_names:
+        for name in outside_names:
+            print(f"    - {name}")
     print(f"Venue setelah cleaning: {n_after}")
 
-    df_clean.to_csv(config.MERGED_VENUES_ENRICHED_CSV, index=False)
+    tmp = config.MERGED_VENUES_ENRICHED_CSV + ".tmp"
+    df_clean.to_csv(tmp, index=False)
+    os.replace(tmp, config.MERGED_VENUES_ENRICHED_CSV)
     print(f"\nTersimpan -> {config.MERGED_VENUES_ENRICHED_CSV}")
 
 
