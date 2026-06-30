@@ -53,8 +53,10 @@ def main():
     osm_lat = osm["latitude"].to_numpy()
     osm_lon = osm["longitude"].to_numpy()
 
-    matched_cols = {c: [] for c in ["opening_hours", "wikipedia", "website",
-                                     "osm_url", "References", "hours_source"]}
+    DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+    day_cols = [f"{d}_buka" for d in DAYS_ID] + [f"{d}_tutup" for d in DAYS_ID]
+
+    matched_cols = {c: [] for c in ["osm_url", "References", "hours_source"] + day_cols}
     n_match = 0
     for _, row in steps.iterrows():
         idx = find_nearest_osm_idx(row["latitude"], row["longitude"],
@@ -62,15 +64,17 @@ def main():
         if idx is not None:
             n_match += 1
             nearest = osm.iloc[idx]
-            matched_cols["opening_hours"].append(nearest.get("Senin_buka", "") or "")
-            matched_cols["wikipedia"].append("")
-            matched_cols["website"].append("")
-            matched_cols["osm_url"].append(nearest.get("osm_url", ""))
-            matched_cols["References"].append(nearest.get("References", ""))
+            matched_cols["osm_url"].append(nearest.get("osm_url", "") or "")
+            matched_cols["References"].append(nearest.get("References", "") or "")
             matched_cols["hours_source"].append(nearest.get("hours_source", "default"))
+            for dc in day_cols:
+                matched_cols[dc].append(nearest.get(dc, "Tutup") or "Tutup")
         else:
-            for c in matched_cols:
-                matched_cols[c].append("" if c != "hours_source" else "default")
+            matched_cols["osm_url"].append("")
+            matched_cols["References"].append("")
+            matched_cols["hours_source"].append("default")
+            for dc in day_cols:
+                matched_cols[dc].append("Tutup")
 
     for c, vals in matched_cols.items():
         steps[c] = vals

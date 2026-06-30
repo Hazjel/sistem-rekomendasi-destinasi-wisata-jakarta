@@ -79,10 +79,21 @@ STEPS_NAME_EXCLUDE_KEYWORDS = [
     "swimming pool apartemen", "wisma ", "menara ", "gedung kantor",
 ]
 
+# Blacklist nama eksplisit -- venue yang lolos keyword-exclude tapi jelas bukan
+# destinasi wisata (terdeteksi via spot-check manual).
+STEPS_NAME_BLACKLIST = [
+    "lobby",
+    "ruang besar",
+    "ivan's heart",
+    "rawasari barat",
+    "ccf ( kebudayaan perancis )",
+]
+
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
 # OSM (enrichment: jam buka, link referensi) by koordinat berdekatan.
 MERGE_RADIUS_M = 150
 MERGED_VENUES_CSV = "data/processed/merged_venues.csv"
+MERGED_VENUES_ENRICHED_CSV = "data/processed/merged_venues_enriched.csv"
 
 # Clustering per zona (K-Means by lat/lon) -> input GA/PSO (next phase).
 CLUSTER_K = 8

@@ -34,11 +34,22 @@ def main():
     )
     excluded_sample = filtered.loc[mask_exclude, "name"].head(10).tolist()
     filtered = filtered[~mask_exclude].copy()
-    n_after = len(filtered)
+    n_after_kw = len(filtered)
     print(f"Setelah keyword-exclude nama (kantor/hotel/lampu merah/dst): "
-          f"{n_after} ({mask_exclude.sum()} dibuang)")
+          f"{n_after_kw} ({mask_exclude.sum()} dibuang)")
     if excluded_sample:
         print(f"  contoh yang dibuang: {excluded_sample}")
+
+    # Blacklist nama eksplisit (venue lolos keyword-exclude tapi jelas noise)
+    name_lower2 = filtered["name"].str.lower().fillna("")
+    mask_blacklist = name_lower2.isin([b.lower() for b in config.STEPS_NAME_BLACKLIST])
+    blacklisted = filtered.loc[mask_blacklist, "name"].tolist()
+    filtered = filtered[~mask_blacklist].copy()
+    n_after = len(filtered)
+    print(f"Setelah blacklist nama eksplisit: "
+          f"{n_after} ({mask_blacklist.sum()} dibuang)")
+    if blacklisted:
+        print(f"  dibuang: {blacklisted}")
 
     print("\nDistribusi kategori (final):")
     print(filtered["venue_category"].value_counts().to_string())

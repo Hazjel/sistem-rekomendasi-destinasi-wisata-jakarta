@@ -19,7 +19,7 @@ import config
 
 
 def main():
-    df = pd.read_csv(config.MERGED_VENUES_CSV)
+    df = pd.read_csv(config.MERGED_VENUES_ENRICHED_CSV)
     print(f"Venue input (merged): {len(df)}")
 
     coords = df[["latitude", "longitude"]].to_numpy()
