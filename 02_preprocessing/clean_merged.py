@@ -52,7 +52,29 @@ def main():
     mask_closed = df["business_status"].isin(CLOSED_STATUSES)
     closed_names = df.loc[mask_closed & ~mask_blacklist & ~mask_outside, "name"].tolist()
 
-    mask_drop = mask_blacklist | mask_outside | mask_closed
+    # Filter vihara/temple kecil yang bukan destinasi wisata publik:
+    # checkin_count < 5 DAN bukan tempat ibadah bersejarah/dikenal
+    HISTORIC_TEMPLE_KEYWORDS = [
+        "toasebio", "dharma bhakti", "petak sembilan", "klenteng",
+        "istiqlal", "katedral", "gereja", "masjid agung", "masjid raya",
+        "ekayana", "jakartadhammacakka", "dhammacakka", "tepekong",
+        "pura aditya jaya",
+    ]
+    def is_small_temple(row):
+        if row.get("venue_category") != "Temple":
+            return False
+        checkin = row.get("checkin_count", 0) or 0
+        if checkin >= 5:
+            return False
+        name_lower = str(row.get("name", "")).lower()
+        if any(kw in name_lower for kw in HISTORIC_TEMPLE_KEYWORDS):
+            return False
+        return True
+
+    mask_small_temple = df.apply(is_small_temple, axis=1)
+    small_temple_names = df.loc[mask_small_temple & ~mask_blacklist & ~mask_outside & ~mask_closed, "name"].tolist()
+
+    mask_drop = mask_blacklist | mask_outside | mask_closed | mask_small_temple
     df_clean = df[~mask_drop].copy().reset_index(drop=True)
     n_after = len(df_clean)
 
@@ -70,6 +92,10 @@ def main():
         for name in closed_names:
             status = df.loc[df["name"] == name, "business_status"].values[0]
             print(f"    - [{status}] {name}")
+    print(f"Dibuang (temple/vihara kecil checkin<5): {mask_small_temple.sum()}")
+    if small_temple_names:
+        for name in small_temple_names:
+            print(f"    - {name}")
     print(f"Venue setelah cleaning: {n_after}")
 
     tmp = config.MERGED_VENUES_ENRICHED_CSV + ".tmp"

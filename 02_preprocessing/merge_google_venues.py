@@ -23,7 +23,9 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.dirname(__file__))
 import config
+from dki_boundary import load_dki_polygon, is_in_dki
 
 GOOGLE_RAW = "data/raw/venues_google_raw.csv"
 OVERLAP_RADIUS_M = 100  # venue dalam 100m dianggap sama
@@ -118,14 +120,11 @@ def main():
 
     mask_low_count = google_raw.apply(below_min_rating_count, axis=1)
 
-    # Filter koordinat: harus dalam bbox DKI Jakarta + Kepulauan Seribu
-    # Bbox daratan: lon >= 106.72 (batas barat DKI, hindari Tangerang)
-    # Kepulauan Seribu: lat > -5.9 (utara Teluk Jakarta)
-    south, north = config.JAKARTA_BBOX[0], config.JAKARTA_BBOX[2]
-    west, east = config.JAKARTA_BBOX[1], config.JAKARTA_BBOX[3]
-    mask_outside = ~(
-        (google_raw["latitude"] >= south) & (google_raw["latitude"] <= north) &
-        (google_raw["longitude"] >= west) & (google_raw["longitude"] <= east)
+    # Filter koordinat: harus dalam polygon administratif DKI Jakarta
+    # Pakai polygon (bukan bbox) agar venue Tangsel/Depok/Tangerang di sudut bbox tidak lolos
+    dki_poly = load_dki_polygon()
+    mask_outside = ~google_raw.apply(
+        lambda r: is_in_dki(r["latitude"], r["longitude"], dki_poly), axis=1
     )
 
     mask_drop = mask_blacklist | mask_keyword | mask_no_rating | mask_invalid_type | mask_low_count | mask_outside
@@ -136,7 +135,7 @@ def main():
     print(f"  - no rating: {mask_no_rating.sum()}")
     print(f"  - invalid google type: {mask_invalid_type.sum()}")
     print(f"  - rating count terlalu rendah: {mask_low_count.sum()}")
-    print(f"  - di luar bbox DKI: {mask_outside.sum()}")
+    print(f"  - di luar polygon DKI: {mask_outside.sum()}")
     print(f"  Total dibuang: {mask_drop.sum()}, sisa: {len(google_filtered)}")
 
     # Dedup internal Google venues by koordinat (100m radius)
