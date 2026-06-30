@@ -29,11 +29,11 @@ Transformasi bertahap. Tiap script punya print **before/after** jumlah row.
 | 2 | `clean_steps.py` | `jakarta_checkins_raw.csv` | `steps_checkins_clean.csv` + `steps_venues_raw.csv` | Drop null, agregasi per venue, hitung checkin_count |
 | 3 | `filter_tourism.py` | `steps_venues_raw.csv` | `steps_filtered.csv` | 4 tahap: whitelist 14 kategori → keyword-exclude → blacklist eksplisit → dedupe nama |
 | 4 | `merge_sources.py` | `steps_filtered.csv` + `venues_enriched.csv` | `merged_venues.csv` | Gabung Massive-STEPS + OSM enrichment (jam buka, link referensi) radius 150m |
-| 5 | `enrich_hours_google.py` | `merged_venues.csv` | `merged_venues_enriched.csv` | Enrich jam buka akurat + rating + deskripsi via Google Places API |
-| 6 | `clean_merged.py` | `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Noise removal batch 3: buang kantor, venue luar Jakarta, nama ambigu |
+| 5 | `enrich_hours_google.py` | `merged_venues.csv` | `merged_venues_enriched.csv` | Enrich jam buka + rating + deskripsi via Google Places API. Venue outdoor/parsial otomatis dapat fallback jam default per kategori |
+| 6 | `clean_merged.py` | `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Noise removal: buang kantor, venue luar Jakarta, nama ambigu |
 | 7 | `merge_google_venues.py` | `venues_google_raw.csv` + `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Tambah venue wisata dari Google Places yang tidak ada di Massive-STEPS |
 
-**Result setelah 02**: `data/processed/merged_venues_enriched.csv` — 393 venue, lengkap dengan jam buka per hari, google_rating, deskripsi, dll.
+**Result setelah 02**: `data/processed/merged_venues_enriched.csv` — 376 venue, lengkap dengan jam buka per hari, google_rating, deskripsi, dll.
 
 ---
 

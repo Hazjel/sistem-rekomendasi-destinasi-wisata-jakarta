@@ -31,6 +31,36 @@ DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 # Google: 0=Sunday, 1=Monday, ..., 6=Saturday
 GDAY_TO_ID = {0: "Minggu", 1: "Senin", 2: "Selasa", 3: "Rabu",
               4: "Kamis", 5: "Jumat", 6: "Sabtu"}
+
+# Fallback jam per kategori untuk venue yang Google tidak punya data jam
+# (outdoor, monumen, pantai) atau return data parsial (<2 hari terisi).
+DEFAULT_HOURS = {
+    "Monument / Landmark":          ("00:00", "23:59"),
+    "Beach":                        ("00:00", "23:59"),
+    "Historic Site":                ("08:00", "17:00"),
+    "Temple":                       ("06:00", "18:00"),
+    "Buddhist Temple":              ("06:00", "18:00"),
+    "Theme Park Ride / Attraction": ("10:00", "18:00"),
+    "Theme Park":                   ("10:00", "20:00"),
+    "Zoo":                          ("08:00", "17:00"),
+    "Museum":                       ("08:00", "16:00"),
+    "History Museum":               ("08:00", "16:00"),
+    "Art Museum":                   ("09:00", "17:00"),
+    "Science Museum":               ("08:00", "16:00"),
+    "Aquarium":                     ("09:00", "17:00"),
+}
+
+
+def apply_default_hours(df, idx):
+    """Isi jam default per kategori jika Google tidak punya data jam."""
+    cat = df.at[idx, "venue_category"]
+    if cat not in DEFAULT_HOURS:
+        return
+    buka, tutup = DEFAULT_HOURS[cat]
+    for day in DAYS_ID:
+        df.at[idx, f"{day}_buka"] = buka
+        df.at[idx, f"{day}_tutup"] = tutup
+    df.at[idx, "hours_source"] = "default_category"
 BASE = "https://places.googleapis.com/v1"
 
 
@@ -148,6 +178,7 @@ def main():
 
         if details:
             hours = details.get("hours", {})
+            filled_days = sum(1 for v in hours.values() if v is not None)
             for day in DAYS_ID:
                 val = hours.get(day)
                 df.at[idx, f"{day}_buka"] = val[0] if val else "Tutup"
@@ -161,6 +192,13 @@ def main():
             df.at[idx, "google_types"] = ",".join(details.get("types", []))
             if details.get("website") and not df.at[idx, "References"]:
                 df.at[idx, "References"] = details.get("website")
+            # Google kadang return response tapi jam parsial (< 2 hari terisi)
+            # -> venue outdoor/monumen yang tidak punya jam formal di Google
+            if filled_days < 2:
+                apply_default_hours(df, idx)
+        else:
+            # Google tidak return data sama sekali -> fallback default kategori
+            apply_default_hours(df, idx)
 
         if (i + 1) % 25 == 0:
             df.to_csv(config.MERGED_VENUES_ENRICHED_CSV, index=False)
