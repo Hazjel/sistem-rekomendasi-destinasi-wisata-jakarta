@@ -46,7 +46,9 @@ HOTEL_ENRICHED_CSV = "data/processed/hotels_enriched.csv"
 # trajectory/popularitas yang OSM tidak punya (lihat 01_data_collection/collect_steps.py).
 STEPS_REPO_ID = "CRUISEResearchGroup/Massive-STEPS-Jakarta"
 STEPS_CHECKINS_FILENAME = "jakarta_checkins.csv"
-STEPS_VENUES_RAW_CSV = "data/raw/steps_venues_raw.csv"
+STEPS_CHECKINS_RAW_CSV = "data/raw/jakarta_checkins_raw.csv"         # mentah, output collect_steps.py
+STEPS_CHECKINS_CLEAN_CSV = "data/processed/steps_checkins_clean.csv" # sesudah drop null, output clean_steps.py
+STEPS_VENUES_RAW_CSV = "data/processed/steps_venues_raw.csv"         # agregasi per venue, output clean_steps.py
 STEPS_FILTERED_CSV = "data/processed/steps_filtered.csv"
 
 # Whitelist kategori wisata dari Massive-STEPS (Foursquare taxonomy).

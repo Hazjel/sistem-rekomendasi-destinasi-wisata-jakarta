@@ -2,12 +2,11 @@
 Unduh dataset Massive-STEPS-Jakarta (HuggingFace) -- check-in nyata (GPS +
 user behavior), pelengkap OSM yang tidak punya data trajectory/popularitas asli.
 
-Level data: per check-in (412.100 row) -> diagregasi jadi per venue (1 row/venue,
-checkin_count = proxy popularitas nyata, pengganti unique_visitors sintetis OSM).
+Tahap ini HANYA download dan simpan mentah -- tidak ada cleaning/transformasi.
+Cleaning (drop null, agregasi per venue) dilakukan di 02_preprocessing/clean_steps.py.
 
 Output:
-    data/raw/steps_checkins_raw.csv  (level check-in, utk fase trail/sequence nanti)
-    data/raw/steps_venues_raw.csv    (level venue, 1 row/venue, dipakai filter_tourism.py)
+    data/raw/jakarta_checkins_raw.csv  (mentah apa adanya dari HuggingFace, 412.100 row)
 """
 import os
 import sys
@@ -20,44 +19,21 @@ import config
 
 
 def main():
-    os.makedirs(os.path.dirname(config.STEPS_VENUES_RAW_CSV), exist_ok=True)
+    os.makedirs("data/raw", exist_ok=True)
 
     print(f"Download {config.STEPS_REPO_ID} / {config.STEPS_CHECKINS_FILENAME} ...")
     path = hf_hub_download(repo_id=config.STEPS_REPO_ID,
                             filename=config.STEPS_CHECKINS_FILENAME,
                             repo_type="dataset")
     df = pd.read_csv(path)
-    n_before = len(df)
-    print(f"Total check-in: {n_before}")
+    print(f"Total check-in (mentah): {len(df)}")
+    print(f"Kolom: {list(df.columns)}")
+    print(f"Null per kolom:")
+    print(df.isnull().sum()[df.isnull().sum() > 0].to_string())
 
-    df = df.dropna(subset=["latitude", "longitude", "name"])
-    n_after_dropna = len(df)
-    print(f"Setelah drop null lat/lon/name: {n_after_dropna} "
-          f"({n_before - n_after_dropna} dibuang, "
-          f"{(n_before - n_after_dropna) / n_before:.1%})")
-
-    checkins_path = "data/raw/steps_checkins_raw.csv"
-    df.to_csv(checkins_path, index=False)
-    print(f"Tersimpan (level check-in) -> {checkins_path}")
-
-    # Agregasi per venue: 1 row/venue, checkin_count = popularitas nyata.
-    venues = (
-        df.groupby("venue_id")
-        .agg(
-            name=("name", "first"),
-            venue_category=("venue_category", "first"),
-            latitude=("latitude", "first"),
-            longitude=("longitude", "first"),
-            address=("address", "first"),
-            checkin_count=("venue_id", "count"),
-            last_checkin=("timestamp", "max"),
-        )
-        .reset_index()
-    )
-    print(f"Venue unik (sebelum filter kategori): {len(venues)}")
-
-    venues.to_csv(config.STEPS_VENUES_RAW_CSV, index=False)
-    print(f"Tersimpan (level venue) -> {config.STEPS_VENUES_RAW_CSV}")
+    out = "data/raw/jakarta_checkins_raw.csv"
+    df.to_csv(out, index=False)
+    print(f"\nTersimpan mentah -> {out} ({len(df)} baris)")
 
 
 if __name__ == "__main__":
