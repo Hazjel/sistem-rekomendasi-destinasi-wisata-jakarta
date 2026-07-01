@@ -323,6 +323,10 @@ STEPS_NAME_BLACKLIST = [
     "pantai mutiara",             # Google return sebagai nama jalan, bukan pantai wisata mandiri
     "pusdiklat buddhis maitreyawira (天真佛堂)",  # fasilitas pelatihan, tidak terbuka publik bebas
     "atlantis water adventures ancol",  # duplikat Atlantis Water Adventure (google_00097), 120m berdekatan
+    # Batch 12: validasi koordinat 2026-07-01 — duplikat terdeteksi koordinat <50m + rating identik
+    "korem ekayana buddhist center",    # duplikat Ekayana Arama (21m, rating_count identik 1450)
+    "wahana ontang anting",             # sub-wahana DUFAN (40m dari DUFAN induk, rating 37)
+    "museum komodo",                    # duplikat Museum Reptilia TMII (24m, rating_count identik 1146)
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +

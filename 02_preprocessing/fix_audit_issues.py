@@ -103,7 +103,7 @@ REMOVE_DUPLICATES = {
 # === FIX KOORDINAT: update ke koordinat Google yang benar ===
 FIX_COORDS = {
     # nama_lower: (lat_baru, lon_baru)
-    'bundaran bank indonesia (bundaran patung kuda)': (-6.1754, 106.8272),  # Bundaran HI
+    'bundaran bank indonesia (bundaran patung kuda)': (-6.1866, 106.8228),  # Bundaran BI Jl. MH Thamrin (bukan Monas)
     'masjid at tarbiyah': (-6.2857, 106.8066),  # Masjid At-Tarbiyah Cipete (bukan Cilandak)
     'dermaga one - ancol': (-6.1235, 106.8327),  # Dermaga Ancol yang benar
     'lubang buaya': (-6.2851, 106.9082),          # Monumen Lubang Buaya
