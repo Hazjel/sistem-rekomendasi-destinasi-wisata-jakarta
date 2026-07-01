@@ -319,6 +319,10 @@ STEPS_NAME_BLACKLIST = [
     "harry darsono museum",       # reservasi wajib, tidak bisa dikunjungi walk-in
     # Batch 10: audit jam 2026-06-30 — duplikat, jam sangat terbatas
     "pura adhitya jaya",          # duplikat Pura Aditya Jaya (venue_id 55752), beda ejaan saja
+    # Batch 11: audit 2026-07-01 — tidak ada rating Google, bukan destinasi wisata publik
+    "pantai mutiara",             # Google return sebagai nama jalan, bukan pantai wisata mandiri
+    "pusdiklat buddhis maitreyawira (天真佛堂)",  # fasilitas pelatihan, tidak terbuka publik bebas
+    "atlantis water adventures ancol",  # duplikat Atlantis Water Adventure (google_00097), 120m berdekatan
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +

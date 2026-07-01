@@ -34,11 +34,18 @@ def main():
 
     mask_blacklist = name_lower.isin(blacklist_lower)
 
-    # Lindungi venue STEPS (checkin_count > 0) dari blacklist collision —
-    # kasus: "ancol beach" blacklist match "Ancol Beach" (247 checkin) juga.
-    # Venue dengan checkin_count > 0 berasal dari STEPS (data nyata), bukan noise.
-    mask_has_checkin = df["checkin_count"].fillna(0) > 0
-    mask_blacklist = mask_blacklist & ~mask_has_checkin
+    # Venue yang WAJIB dihapus meski checkin_count tinggi — sudah diverifikasi manual
+    # bukan destinasi wisata (jalan, fasilitas non-publik, duplikat terverifikasi)
+    FORCE_REMOVE = {
+        "pantai mutiara",   # Google return sebagai nama jalan, bukan pantai wisata
+    }
+    mask_force = name_lower.isin(FORCE_REMOVE)
+
+    # Proteksi checkin hanya untuk venue STEPS dengan checkin_count TINGGI (>10) —
+    # mencegah collision accidental (nama generik seperti "ancol beach" 247 checkin).
+    # Venue checkin rendah (<=10) yang masuk blacklist = memang noise, tidak dilindungi.
+    mask_has_high_checkin = df["checkin_count"].fillna(0) > 10
+    mask_blacklist = (mask_blacklist & ~mask_has_high_checkin) | mask_force
 
     removed = df.loc[mask_blacklist, "name"].tolist()
 

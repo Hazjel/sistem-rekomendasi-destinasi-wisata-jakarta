@@ -28,7 +28,7 @@ import config
 from dki_boundary import load_dki_polygon, is_in_dki
 
 GOOGLE_RAW = "data/raw/venues_google_raw.csv"
-OVERLAP_RADIUS_M = 100  # venue dalam 100m dianggap sama
+OVERLAP_RADIUS_M = 150  # venue dalam 150m dianggap sama (naik dari 100m: catch duplikat Atlantis 120m)
 
 # Google Places types yang dianggap valid sebagai destinasi wisata
 # Venue HARUS punya minimal 1 dari type ini di google_types
