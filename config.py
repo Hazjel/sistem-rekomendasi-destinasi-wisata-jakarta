@@ -327,6 +327,25 @@ STEPS_NAME_BLACKLIST = [
     "korem ekayana buddhist center",    # duplikat Ekayana Arama (21m, rating_count identik 1450)
     "wahana ontang anting",             # sub-wahana DUFAN (40m dari DUFAN induk, rating 37)
     "museum komodo",                    # duplikat Museum Reptilia TMII (24m, rating_count identik 1146)
+    # Batch 13: audit 2026-07-02 — venue di dalam mall (bukan destinasi wisata mandiri)
+    "fun world",                        # dalam Grand Indonesia Shopping Town, Lt 5
+    "kidzania",                         # dalam Pacific Place Mall
+    "treasure island",                  # dalam Mall Of Indonesia
+    "wowzonia",                         # dalam Lippo Mall Kemang
+    "pondok indah water park",          # dalam kompleks Pondok Indah Mall
+    "sky rink ice skating",             # dalam Mall Taman Anggrek, Lt 3
+    "jakarta aquarium",                 # dalam Neo Soho mall
+    "statue 4 heroes gallery",          # dalam Lotte Mall Jakarta
+    # Batch 14: audit 2026-07-02 — bukan destinasi wisata mandiri
+    "kiztopia @ agora mall",            # dalam Agora Mall (nama venue sudah sebut mall)
+    # "trick art japanese 3d painting exhibition",  # KEEP: venue wisata unik (82 checkin)
+    "kolam renang arcici",              # kolam renang umum biasa, bukan destinasi wisata
+    "kolam renang tirta yudha",         # kolam renang umum biasa
+    "kolam renang nilam kramat jati",   # kolam renang umum biasa
+    "tangkas sports centre",            # fasilitas olahraga, bukan wisata
+    "gondola ancol stasiun c",          # transportasi internal Ancol, bukan venue mandiri
+    "taman palem, gg strain, centex",   # nama tidak jelas, bukan destinasi wisata
+    "keandra aquarium",                 # showroom/toko aquarium di ruko, bukan aquarium wisata publik
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
@@ -337,13 +356,16 @@ MERGED_VENUES_ENRICHED_CSV = "data/processed/merged_venues_enriched.csv"
 
 # Clustering per zona (K-Means by lat/lon) -> input GA/PSO (next phase).
 CLUSTER_K = 8
-CLUSTERED_VENUES_CSV = "data/processed/clustered_venues.csv"
+CLUSTERED_VENUES_CSV = "data/processed/jakarta_tourism_venues_clustered.csv"
+TOURISM_VENUES_CSV = "data/processed/jakarta_tourism_venues.csv"      # pre-clustering, tanpa zone_id
+HOTELS_CSV = "data/processed/jakarta_hotels.csv"
 
 # Time matrix: waktu tempuh antar venue (beda dari time_spent = durasi di
 # venue). OSRM public demo -- gratis, tanpa API key, tapi ToS-limited (bukan
 # utk produksi/bulk besar) -> matrix dibatasi antar-venue dalam zone_id sama.
 OSRM_BASE_URL = "http://router.project-osrm.org"
-TIME_MATRIX_CSV = "data/processed/time_matrix.csv"
+TIME_MATRIX_CSV = "data/processed/jakarta_travel_time_inzone.csv"
+TIME_MATRIX_ALLPAIRS_CSV = "data/processed/jakarta_travel_time_allpairs.csv"
 AVG_SPEED_KMH_FALLBACK = 20  # estimasi kondisi macet Jakarta, kalau OSRM gagal
 
 # Seed agar simulasi traffic reproducible.

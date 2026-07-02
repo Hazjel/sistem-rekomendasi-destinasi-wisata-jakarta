@@ -6,7 +6,7 @@ untuk memudahkan penjadwalan per hari (cluster per zona wilayah Jakarta)".
 Hasil zone_id jadi basis scope time_matrix (04_time_matrix/) -- matrix
 dihitung hanya antar-venue dalam zone_id sama, bukan all-pairs se-Jakarta.
 
-Output: data/processed/clustered_venues.csv
+Output: data/processed/jakarta_tourism_venues_clustered.csv
 """
 import os
 import sys
@@ -37,6 +37,11 @@ def main():
     os.makedirs(os.path.dirname(config.CLUSTERED_VENUES_CSV), exist_ok=True)
     df.to_csv(config.CLUSTERED_VENUES_CSV, index=False)
     print(f"\nTersimpan -> {config.CLUSTERED_VENUES_CSV}")
+
+    # Output pre-clustering (tanpa zone_id) untuk keperluan eksternal/rekan
+    df_no_zone = df.drop(columns=["zone_id"])
+    df_no_zone.to_csv(config.TOURISM_VENUES_CSV, index=False)
+    print(f"Tersimpan -> {config.TOURISM_VENUES_CSV}")
 
 
 if __name__ == "__main__":

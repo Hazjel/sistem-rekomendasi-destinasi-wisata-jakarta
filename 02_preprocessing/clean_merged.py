@@ -37,7 +37,11 @@ def main():
     # Venue yang WAJIB dihapus meski checkin_count tinggi — sudah diverifikasi manual
     # bukan destinasi wisata (jalan, fasilitas non-publik, duplikat terverifikasi)
     FORCE_REMOVE = {
-        "pantai mutiara",   # Google return sebagai nama jalan, bukan pantai wisata
+        "pantai mutiara",        # Google return sebagai nama jalan, bukan pantai wisata
+        "fun world",             # dalam mall (Grand Indonesia Lt 5), bukan destinasi mandiri
+        "kidzania",              # dalam mall (Pacific Place), bukan destinasi mandiri
+        "sky rink ice skating",  # dalam mall (Taman Anggrek Lt 3), bukan destinasi mandiri
+        # "trick art japanese 3d painting exhibition",  # KEEP: venue wisata unik (82 checkin)
     }
     mask_force = name_lower.isin(FORCE_REMOVE)
 

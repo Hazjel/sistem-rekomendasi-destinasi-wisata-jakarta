@@ -214,6 +214,28 @@ def main():
     # Gabung Google batch
     combined = pd.concat([existing, google_new], ignore_index=True)
 
+    # Merge manual venues (venue valid yang tidak tertangkap pipeline otomatis)
+    MANUAL_VENUES_CSV = "data/raw/manual_venues.csv"
+    if os.path.exists(MANUAL_VENUES_CSV):
+        manual = pd.read_csv(MANUAL_VENUES_CSV, dtype=object)
+        # Drop kolom zone_id dari manual (akan di-assign ulang oleh cluster_zones.py)
+        manual = manual.drop(columns=["zone_id"], errors="ignore")
+        existing_ids = set(combined["venue_id"].astype(str))
+        existing_names = set(combined["name"].str.lower().str.strip())
+        manual_new = manual[
+            ~manual["venue_id"].astype(str).isin(existing_ids) &
+            ~manual["name"].str.lower().str.strip().isin(existing_names)
+        ].copy()
+        if len(manual_new):
+            for col in combined.columns:
+                if col not in manual_new.columns:
+                    manual_new[col] = None
+            manual_new = manual_new[[c for c in combined.columns if c in manual_new.columns]]
+            combined = pd.concat([combined, manual_new], ignore_index=True)
+            print(f"  Tambahan dari manual_venues: {len(manual_new)}")
+            for n in manual_new["name"]:
+                print(f"    + {n}".encode("utf-8", errors="replace").decode("utf-8"))
+
     n_final = len(combined)
     print(f"\nDataset final setelah merge Google venues: {n_final}")
     print(f"  Existing (STEPS+OSM): {n_existing}")
