@@ -173,7 +173,11 @@ class TTDPProblem:
                 violated = depart > close_m       # constraint TTDP (soft)
                 visits.append({
                     "venue_id": vid, "name": info["name"],
+                    "depart_prev": t,             # jam berangkat dari titik sebelumnya
+                    "travel_min": leg,            # lama perjalanan (menit)
+                    "from_hotel": prev is None,   # leg ini berangkat dari hotel?
                     "arrival": arrive, "start": start_visit, "depart": depart,
+                    "wait": start_visit - arrive, # menunggu venue buka (menit)
                     "violation": violated,
                 })
                 if violated:
@@ -184,7 +188,15 @@ class TTDPProblem:
                 visited.add(vid)
                 prev, t = vid, depart
             if prev is not None:                  # balik hotel
-                travel_total += self._info[prev]["hotel_min"]
+                back_min = self._info[prev]["hotel_min"]
+                travel_total += back_min
+                visits.append({
+                    "venue_id": None, "name": "(kembali ke hotel)",
+                    "depart_prev": t, "travel_min": back_min,
+                    "from_hotel": False,
+                    "arrival": t + back_min, "start": t + back_min,
+                    "depart": t + back_min, "wait": 0.0, "violation": False,
+                })
             days.append(visits)
             queue = leftover
             if not queue:
