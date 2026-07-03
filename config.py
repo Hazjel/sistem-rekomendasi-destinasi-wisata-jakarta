@@ -352,6 +352,19 @@ STEPS_NAME_BLACKLIST = [
     "gondola ancol stasiun c",          # transportasi internal Ancol, bukan venue mandiri
     "taman palem, gg strain, centex",   # nama tidak jelas, bukan destinasi wisata
     "keandra aquarium",                 # showroom/toko aquarium di ruko, bukan aquarium wisata publik
+    # Batch 15: audit 2026-07-03 — noise dari re-merge (venue Google baru yang lolos filter).
+    # Prinsip: buang yang bukan destinasi wisata per definisi (atraksi/budaya/alam/rekreasi
+    # yang menarik wisatawan). Tempat ibadah lingkungan biasa != wisata religi bersejarah
+    # ikonik (Istiqlal/Katedral/GPIB Immanuel = KEEP).
+    "timezone lippo mall kemang",       # arcade game dalam mall, sejenis Fun World
+    "masjid jami' at-taqwa",            # masjid lingkungan biasa, bukan wisata religi bersejarah
+    "gereja st. ignatius loyola",       # gereja paroki biasa Menteng
+    "symphony of the sea",              # pertunjukan sub-venue kawasan Ancol (pola pentas lumba2)
+    "akili museum of art",              # museum privat by-appointment (pola Harry Darsono)
+    "roh",                              # ROH Projects = galeri seni komersial/art dealer, bukan wisata publik
+    # KEEP dari re-merge yang sama: jakarta aquarium safari, gpib immanuel (gereja
+    # bersejarah 1839), galeri indonesia kaya (venue budaya dlm Grand Indonesia, kasus
+    # spt Jakarta Aquarium), maritime museum of indonesia.
 ]
 
 # Merge Massive-STEPS (tulang punggung: POI nyata + popularitas check-in) +
@@ -376,3 +389,64 @@ AVG_SPEED_KMH_FALLBACK = 20  # estimasi kondisi macet Jakarta, kalau OSRM gagal
 
 # Seed agar simulasi traffic reproducible.
 RANDOM_SEED = 42
+
+# ============================================================================
+# FASE MODELING (05_modeling/) — CBF + GA vs PSO vs GA-PSO Hybrid utk TTDP
+# ============================================================================
+
+# --- Itinerary defaults ---
+DAY_START_MIN = 8 * 60          # 08:00 — turis mulai dari hotel
+DAY_END_MIN = 20 * 60           # 20:00 — harus kembali ke hotel
+MAX_DAYS = 5
+CANDIDATES_PER_DAY = 12         # top-N kandidat CBF = 12 x jumlah hari
+
+# --- Bobot fitness (maximize) ---
+# fitness = SUM satisfaction - W_TIME*travel_norm - W_ZONE*cross_zone - penalti jam
+FITNESS_W_SIM = 0.6             # bobot skor CBF dalam satisfaction
+FITNESS_W_POP = 0.4             # bobot rating ternormalisasi dalam satisfaction
+FITNESS_W_TIME = 1.0            # penalti total travel time (per jam perjalanan)
+FITNESS_W_ZONE = 0.3            # penalti per perpindahan lintas zona (soft)
+FITNESS_PENALTY_HOURS = 5.0     # penalti besar per pelanggaran jam buka (soft, smooth utk PSO)
+
+# --- Parameter GA ---
+GA_POP_SIZE = 50
+GA_N_GEN = 200
+GA_CROSSOVER_RATE = 0.8
+GA_MUTATION_RATE = 0.2
+GA_TOURNAMENT_K = 3
+GA_ELITE = 2
+
+# --- Parameter PSO (diskrit, swap-sequence) ---
+PSO_N_PARTICLES = 50
+PSO_N_ITER = 200
+PSO_W = 0.7                     # inertia: prob. mempertahankan swap velocity lama
+PSO_C1 = 1.5                    # kognitif: tarikan ke pbest
+PSO_C2 = 1.5                    # sosial: tarikan ke gbest
+
+# --- Parameter GA-PSO Hybrid ---
+HYBRID_GA_REFRESH_EVERY = 10    # tiap N iterasi PSO, populasi di-refresh operator genetik
+
+# --- Eksperimen ---
+EXPERIMENT_N_RUNS = 10          # repetisi per algoritma (seed beda)
+EXPERIMENT_RESULTS_CSV = "data/processed/optimization_results.csv"
+CONVERGENCE_LOG_CSV = "data/processed/optimization_convergence.csv"
+
+# --- Budget proxy per kategori ---
+# price_level Google kosong utk hampir semua venue (218/219) -> pakai proxy
+# estimasi biaya tiket per kategori. Level: 0=gratis, 1=murah (<50rb),
+# 2=sedang (50-150rb), 3=mahal (>150rb). Dideklarasikan sbg estimasi di laporan.
+CATEGORY_PRICE_LEVEL = {
+    "Monument / Landmark": 0, "Beach": 1, "Historic Site": 1,
+    "Temple": 0, "Buddhist Temple": 0, "Mosque": 0, "Church": 0,
+    "Spiritual Center": 0, "Park": 0, "Garden": 0, "Lake": 0,
+    "Sculpture Garden": 0, "Scenic Lookout": 0,
+    "Museum": 1, "History Museum": 1, "Art Museum": 1, "Art Gallery": 1,
+    "Science Museum": 1, "Theater": 2, "Performing Arts Venue": 2,
+    "Concert Hall": 2, "Movie Theater": 2, "General Entertainment": 2,
+    "Zoo": 2, "Aquarium": 3, "Theme Park": 3, "Water Park": 3,
+    "Theme Park Ride / Attraction": 3, "Amusement Park": 3,
+    "Nature / Park": 0, "Playground": 1, "Skating Rink": 2,
+    "DEFAULT": 1,
+}
+# Input turis: "hemat" (<=1), "menengah" (<=2), "bebas" (<=3)
+BUDGET_LEVELS = {"hemat": 1, "menengah": 2, "bebas": 3}

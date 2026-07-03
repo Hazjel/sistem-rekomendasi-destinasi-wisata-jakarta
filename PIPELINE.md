@@ -2,7 +2,7 @@
 
 Semua fase dijalankan dari **notebook** di `docs/notebooks/`, urut per nomor.
 Tiap sel `[RUN]` **cache-aware** (skip kalau output ada). Dataset final:
-**226 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
+**219 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
 kategori) — di-import semua notebook.
 
 ---
@@ -48,7 +48,7 @@ Script enrichment API tetap `.py`: one-time, butuh API key + cache.
 `dki_boundary.py` = helper polygon DKI (diimport step 9 & 6, bukan step).
 `archive/` = script satu-kali, bukan pipeline aktif.
 
-**Result**: `merged_venues_enriched.csv` — **226 venue** OPERATIONAL DKI, lengkap
+**Result**: `merged_venues_enriched.csv` — **219 venue** OPERATIONAL DKI, lengkap
 jam per hari, google_rating, description, address, time_spent_minutes.
 
 ---
@@ -67,8 +67,8 @@ Kode OSRM **inline**. Butuh internet.
 
 | Output | Isi |
 |--------|-----|
-| `jakarta_travel_time_inzone.csv` | 4.158 pasangan in-zone (zone sama) |
-| `jakarta_travel_time_allpairs.csv` | 25.425 pasangan all-pairs (nC2) |
+| `jakarta_travel_time_inzone.csv` | 3.912 pasangan in-zone (zone sama) |
+| `jakarta_travel_time_allpairs.csv` | 23.871 pasangan all-pairs (nC2) |
 
 100% OSRM, 0 fallback. In-zone = fitness penalty; all-pairs = lookup cross-zone.
 
@@ -81,14 +81,22 @@ jam). **Bukan** GA/PSO final — itu next phase di `05_modeling/`.
 
 ---
 
-## 05_modeling — NEXT PHASE (belum diimplementasi)
+## NB 06 — Optimasi Itinerary (`docs/notebooks/06_optimization.ipynb`) + `05_modeling/`
 
-- GA optimasi urutan kunjungan multi-hari + PSO pembanding
-- Input: `jakarta_tourism_venues_clustered.csv` + `jakarta_travel_time_allpairs.csv` + `jakarta_hotels.csv`
-- Constraint TTDP: `arrival_time + time_spent_minutes ≤ closing_time`
-- Fitness: maximize satisfaction − penalti_waktu − penalti_cross_zone (soft)
-- Content-Based Filtering: TF-IDF dari `description` + `venue_category`
-- Evaluasi: konvergensi GA vs PSO, silhouette score
+FASE MODELING (selesai): CBF (TF-IDF) + 3 algoritma optimasi dibandingkan.
+
+| Modul | Isi |
+|-------|-----|
+| `05_modeling/cbf.py` | TF-IDF + cosine + Bayesian weighted rating + filter budget (proxy kategori) |
+| `05_modeling/problem.py` | TTDP: time-budget decoding + fitness (satisfaction − travel − cross_zone − penalti jam) |
+| `05_modeling/ga.py` | GA: OX crossover, tournament, swap mutation, elitism |
+| `05_modeling/pso.py` | PSO diskrit swap-sequence |
+| `05_modeling/hybrid.py` | GA-PSO hybrid (PSO + refresh genetik) |
+| `05_modeling/experiment.py` | runner 3 skenario × 3 algoritma × 10 run → `optimization_results.csv` + `optimization_convergence.csv` |
+
+Input: clustered + allpairs + hotels. Konstanta di `config.py` (bagian FASE MODELING).
+NB 06 = demo input turis → itinerary + peta folium + kurva konvergensi + tabel USS.
+Silhouette score clustering ada di NB 03.
 
 ---
 

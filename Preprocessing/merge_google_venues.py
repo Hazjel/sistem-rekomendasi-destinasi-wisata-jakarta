@@ -92,6 +92,7 @@ def main():
         "supermarket", "minimarket", "hypermart", "carrefour",
         "pizza", "burger", "kfc", "mcdonald", "starbucks",
         "bank", "atm", "kantor pos", "puskesmas",
+        "timezone", "fun world", "funworld",  # arcade chain dalam mall, bukan wisata
     ]
 
     mask_blacklist = google_raw["name"].str.lower().isin(blacklist_lower)

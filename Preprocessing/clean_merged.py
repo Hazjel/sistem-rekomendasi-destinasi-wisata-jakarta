@@ -41,6 +41,7 @@ def main():
         "fun world",             # dalam mall (Grand Indonesia Lt 5), bukan destinasi mandiri
         "kidzania",              # dalam mall (Pacific Place), bukan destinasi mandiri
         "sky rink ice skating",  # dalam mall (Taman Anggrek Lt 3), bukan destinasi mandiri
+        "masjid jami' at-taqwa", # masjid lingkungan biasa (checkin 11 > proteksi, force)
         # "trick art japanese 3d painting exhibition",  # KEEP: venue wisata unik (82 checkin)
     }
     mask_force = name_lower.isin(FORCE_REMOVE)

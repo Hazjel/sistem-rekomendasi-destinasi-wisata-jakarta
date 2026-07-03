@@ -28,10 +28,10 @@ Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasi
 
 | File | Isi | Keterangan |
 |------|-----|-----------|
-| `data/processed/jakarta_tourism_venues.csv` | **226 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
-| `data/processed/jakarta_tourism_venues_clustered.csv` | 226 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
-| `data/processed/jakarta_travel_time_inzone.csv` | **4.158 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
-| `data/processed/jakarta_travel_time_allpairs.csv` | **25.425 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
+| `data/processed/jakarta_tourism_venues.csv` | **219 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
+| `data/processed/jakarta_tourism_venues_clustered.csv` | 219 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
+| `data/processed/jakarta_travel_time_inzone.csv` | **3.912 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
+| `data/processed/jakarta_travel_time_allpairs.csv` | **23.871 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
 | `data/processed/jakarta_hotels.csv` | **181 hotel** bersih (daratan Jakarta) | Titik berangkat/pulang itinerary |
 
 ### Kolom Kunci Dataset Venue
@@ -62,7 +62,7 @@ docs/notebooks/
   01_data_collection.ipynb   → data/raw/*  + hotels_google.csv
       Kode collection inline (OSM Overpass, STEPS HuggingFace, Google Places).
 
-  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (226 venue)
+  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (219 venue)
       13 step. Sel [RUN] memanggil script Preprocessing/*.py via run_step()
       (output streaming real-time ke notebook). Script enrichment API tetap .py.
 
@@ -70,11 +70,15 @@ docs/notebooks/
                                jakarta_tourism_venues.csv (tanpa zone_id)
       Kode clustering inline.
 
-  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (4.158 pasangan)
-                               jakarta_travel_time_allpairs.csv (25.425 pasangan)
+  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (3.912 pasangan)
+                               jakarta_travel_time_allpairs.csv (23.871 pasangan)
       Kode OSRM inline. Butuh koneksi internet.
 
   05_modeling.ipynb          → prototipe engine rekomendasi hybrid (06_api/)
+
+  06_optimization.ipynb      → FASE MODELING: CBF + GA vs PSO vs GA-PSO Hybrid
+                               demo input turis → itinerary multi-hari + peta,
+                               eksperimen 3 skenario × 3 algoritma × 10 run
 ```
 
 Folder pendukung (bukan dijalankan langsung):
@@ -83,9 +87,13 @@ Folder pendukung (bukan dijalankan langsung):
 Preprocessing/   15 script .py — dipanggil NB 02 via subprocess.
                     dki_boundary.py = helper polygon (diimport, bukan step).
                     archive/ = script satu-kali, bukan pipeline aktif.
-05_modeling/        ← NEXT PHASE (GA & PSO), belum ada isi.
+05_modeling/     FASE MODELING (dipanggil NB 06):
+                    cbf.py      — TF-IDF + cosine + Bayesian rating + filter budget
+                    problem.py  — TTDP: decoding time-budget + fitness
+                    ga.py / pso.py / hybrid.py — 3 algoritma optimasi (manual numpy)
+                    experiment.py — runner perbandingan → optimization_results.csv
 06_api/             recommend.py / api.py / make_map.py — prototipe API.
-config.py           konstanta bersama (path, blacklist, kategori) — di-import.
+config.py           konstanta bersama (path, blacklist, kategori, param modeling).
 ```
 
 > **Catatan**: fase collection/clustering/time_matrix kodenya **inline penuh** di
@@ -148,13 +156,22 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 
 ---
 
-## Next Phase (Belum Dikerjakan)
+## Fase Modeling (SELESAI — `05_modeling/` + NB 06)
 
-**`05_modeling/` — GA & PSO optimasi rute itinerary multi-hari**
+**CBF (TF-IDF) + GA vs PSO vs GA-PSO Hybrid untuk TTDP multi-hari**
 
-- Input: `jakarta_tourism_venues_clustered.csv` + `jakarta_travel_time_allpairs.csv` + `jakarta_hotels.csv`
-- Constraint TTDP: `arrival_time + time_spent_minutes ≤ closing_time`
-- Fitness: maximize satisfaction − penalti_waktu − penalti_cross_zone (soft)
-- Evaluasi: konvergensi GA vs PSO, silhouette score clustering
+- FASE 1 — CBF: TF-IDF `venue_category+description` + Bayesian weighted rating
+  + filter budget (proxy kategori) → kandidat top-N + skor satisfaction
+- FASE 2 — Optimasi: permutasi kandidat + time-budget decoding (mulai/selesai
+  di hotel, cek jam buka per hari). Constraint TTDP `arrival + time_spent ≤
+  closing` (penalti soft). Fitness = Σsatisfaction − w·travel − w·cross_zone
+  − penalti jam
+- 3 algoritma manual numpy: GA (OX + tournament + elitism), PSO diskrit
+  (swap-sequence), GA-PSO Hybrid (PSO + refresh genetik)
+- Evaluasi: konvergensi (10 run ± std), **User Satisfaction Score** kuantitatif,
+  runtime, silhouette clustering (NB 03)
+- Hasil awal: Hybrid unggul di problem kecil (1 hari), GA unggul di 3-5 hari,
+  PSO konsisten di bawah — detail `data/processed/optimization_results.csv`
 
-**Content-Based Filtering** — TF-IDF dari `description` + `venue_category`
+**Next**: web app prototipe (extend `06_api` — `POST /itinerary`), feedback loop
+bobot fitness, laporan/paper.
