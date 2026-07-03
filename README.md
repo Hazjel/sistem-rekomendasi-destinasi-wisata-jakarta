@@ -24,14 +24,14 @@ Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasi
 
 ---
 
-## Dataset Final (per 2026-07-02) — Valid, Siap Pakai
+## Dataset Final (per 2026-07-03) — Valid, Siap Pakai
 
 | File | Isi | Keterangan |
 |------|-----|-----------|
-| `data/processed/jakarta_tourism_venues.csv` | **219 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
-| `data/processed/jakarta_tourism_venues_clustered.csv` | 219 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
-| `data/processed/jakarta_travel_time_inzone.csv` | **3.919 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
-| `data/processed/jakarta_travel_time_allpairs.csv` | **23.871 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
+| `data/processed/jakarta_tourism_venues.csv` | **226 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
+| `data/processed/jakarta_tourism_venues_clustered.csv` | 226 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
+| `data/processed/jakarta_travel_time_inzone.csv` | **4.158 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
+| `data/processed/jakarta_travel_time_allpairs.csv` | **25.425 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
 | `data/processed/jakarta_hotels.csv` | **181 hotel** bersih (daratan Jakarta) | Titik berangkat/pulang itinerary |
 
 ### Kolom Kunci Dataset Venue
@@ -62,7 +62,7 @@ docs/notebooks/
   01_data_collection.ipynb   → data/raw/*  + hotels_google.csv
       Kode collection inline (OSM Overpass, STEPS HuggingFace, Google Places).
 
-  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (219 venue)
+  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (226 venue)
       13 step. Sel [RUN] memanggil script Preprocessing/*.py via run_step()
       (output streaming real-time ke notebook). Script enrichment API tetap .py.
 
@@ -70,8 +70,8 @@ docs/notebooks/
                                jakarta_tourism_venues.csv (tanpa zone_id)
       Kode clustering inline.
 
-  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (3.919 pasangan)
-                               jakarta_travel_time_allpairs.csv (23.871 pasangan)
+  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (4.158 pasangan)
+                               jakarta_travel_time_allpairs.csv (25.425 pasangan)
       Kode OSRM inline. Butuh koneksi internet.
 
   05_modeling.ipynb          → prototipe engine rekomendasi hybrid (06_api/)

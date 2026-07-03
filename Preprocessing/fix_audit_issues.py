@@ -173,7 +173,7 @@ def parse_periods(periods):
 
 
 def main():
-    df = pd.read_csv(config.CLUSTERED_VENUES_CSV,
+    df = pd.read_csv(config.MERGED_VENUES_ENRICHED_CSV,
                      dtype={'sublocality':'object','locality':'object',
                             'primary_type':'object','business_status':'object',
                             'photo_ref':'object','description':'object'})

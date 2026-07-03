@@ -336,7 +336,11 @@ STEPS_NAME_BLACKLIST = [
     "wowzonia",                         # dalam Lippo Mall Kemang
     "pondok indah water park",          # dalam kompleks Pondok Indah Mall
     "sky rink ice skating",             # dalam Mall Taman Anggrek, Lt 3
-    "jakarta aquarium",                 # dalam Neo Soho mall
+    # "jakarta aquarium",                # KEEP (fix 2026-07-03): salah kategori — bukan
+    # wahana kecil spt Fun World/KidZania. Jakarta Aquarium & Safari = akuarium besar
+    # berdiri sendiri, rating_count 21.000 (audit_cache/75740.json), top attraction
+    # Jakarta meski menempel Central Park Mall. Sama kelas dgn Sea World-Ancol. Masuk
+    # via manual_venues.csv.
     "statue 4 heroes gallery",          # dalam Lotte Mall Jakarta
     # Batch 14: audit 2026-07-02 — bukan destinasi wisata mandiri
     "kiztopia @ agora mall",            # dalam Agora Mall (nama venue sudah sebut mall)
