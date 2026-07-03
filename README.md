@@ -3,6 +3,8 @@
 Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasis
 **Content-Based Filtering + Clustering + optimasi rute Genetic Algorithm & PSO**.
 
+> Pipeline dijalankan dari notebook `docs/notebooks/` (urut 01→05). Lihat [PIPELINE.md](PIPELINE.md).
+
 > **Etika/Legal:** OSM = API harvesting objek terbuka (ODbL). Massive-STEPS =
 > dataset penelitian publik (HuggingFace). Scraping TripAdvisor **tidak dipakai**
 > (melanggar ToS). Google Places API dipakai dengan key pribadi (env var).
