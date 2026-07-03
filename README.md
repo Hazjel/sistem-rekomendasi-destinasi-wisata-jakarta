@@ -49,40 +49,47 @@ Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasi
 
 ---
 
-## Pipeline (Urutan Wajib, Semua Scripted)
+## Pipeline (Jalankan via Notebook, Urut)
+
+Semua fase dijalankan dari **notebook** di `docs/notebooks/`. Tiap notebook =
+1 fase; jalankan sel `[RUN]` urut atas→bawah. Semua sel **cache-aware** (skip
+kalau output sudah ada — hapus file output untuk rebuild).
 
 ```
-01_data_collection/
-  collect_osm.py              → data/raw/venues_osm_raw.csv
-  collect_steps.py            → download Massive-STEPS dari HuggingFace
-  collect_hotels_google.py    → data/processed/hotels_google.csv (raw)
-  collect_venues_google.py    → data/raw/venues_google_raw.csv
+docs/notebooks/
+  01_data_collection.ipynb   → data/raw/*  + hotels_google.csv
+      Kode collection inline (OSM Overpass, STEPS HuggingFace, Google Places).
 
-02_preprocessing/
-  clean_steps.py              → filter STEPS ke kategori wisata
-  clean_osm.py                → venues_osm_clean.csv
-  fill_default_hours.py       → jam default per kategori
-  merge_sources.py            → merge OSM + STEPS
-  enrich_hours_google.py      → jam buka via Google Places API → merged_venues_enriched.csv
-  merge_google_venues.py      → tambah venue Google + manual_venues.csv (idempoten)
-  patch_hours_websearch.py    → patch jam 11 venue dari sumber resmi
-  fix_audit_issues.py         → hapus noise, fix koordinat, re-enrich jam
-  clean_merged.py             → blacklist + polygon DKI + business_status
-  enrich_address_google.py    → backfill address via Google Places
-  enrich_description_wikipedia.py → backfill description via Wikipedia
-  add_time_spent.py           → kolom time_spent_minutes
-  clean_hotels.py             → hotels_google.csv → jakarta_hotels.csv
+  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (219 venue)
+      13 step. Sel [RUN] memanggil script Preprocessing/*.py via run_step()
+      (output streaming real-time ke notebook). Script enrichment API tetap .py.
 
-03_clustering/
-  cluster_zones.py            → jakarta_tourism_venues_clustered.csv (K-Means k=8)
-                                 jakarta_tourism_venues.csv (tanpa zone_id)
+  03_clustering.ipynb        → jakarta_tourism_venues_clustered.csv (K-Means k=8)
+                               jakarta_tourism_venues.csv (tanpa zone_id)
+      Kode clustering inline.
 
-04_time_matrix/
-  build_time_matrix.py        → jakarta_travel_time_inzone.csv (in-zone, OSRM)
-  build_time_matrix_allpairs.py → jakarta_travel_time_allpairs.csv (all-pairs, OSRM)
+  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (3.919 pasangan)
+                               jakarta_travel_time_allpairs.csv (23.871 pasangan)
+      Kode OSRM inline. Butuh koneksi internet.
 
-05_modeling/                  ← NEXT PHASE (GA & PSO)
+  05_modeling.ipynb          → prototipe engine rekomendasi hybrid (06_api/)
 ```
+
+Folder pendukung (bukan dijalankan langsung):
+
+```
+Preprocessing/   15 script .py — dipanggil NB 02 via subprocess.
+                    dki_boundary.py = helper polygon (diimport, bukan step).
+                    archive/ = script satu-kali, bukan pipeline aktif.
+05_modeling/        ← NEXT PHASE (GA & PSO), belum ada isi.
+06_api/             recommend.py / api.py / make_map.py — prototipe API.
+config.py           konstanta bersama (path, blacklist, kategori) — di-import.
+```
+
+> **Catatan**: fase collection/clustering/time_matrix kodenya **inline penuh** di
+> notebook (tidak ada folder script terpisah). Hanya preprocessing yang menyimpan
+> `.py` terpisah (dipanggil via subprocess) karena logic enrichment API panjang &
+> one-time.
 
 ---
 
@@ -103,35 +110,17 @@ GOOGLE_PLACES_KEY=your_api_key_here
 
 ### Jalankan Pipeline (full rebuild)
 
-```powershell
-# 01 — Koleksi data
-python 01_data_collection/collect_osm.py
-python 01_data_collection/collect_steps.py
-python 01_data_collection/collect_hotels_google.py
-python 01_data_collection/collect_venues_google.py
+Buka `docs/notebooks/` di Jupyter, jalankan urut:
 
-# 02 — Preprocessing
-python 02_preprocessing/clean_steps.py
-python 02_preprocessing/clean_osm.py
-python 02_preprocessing/fill_default_hours.py
-python 02_preprocessing/merge_sources.py
-python 02_preprocessing/enrich_hours_google.py
-python 02_preprocessing/merge_google_venues.py
-python 02_preprocessing/patch_hours_websearch.py
-python 02_preprocessing/fix_audit_issues.py
-python 02_preprocessing/clean_merged.py
-python 02_preprocessing/enrich_address_google.py
-python 02_preprocessing/enrich_description_wikipedia.py
-python 02_preprocessing/add_time_spent.py
-python 02_preprocessing/clean_hotels.py
+1. **`01_data_collection.ipynb`** — sel `[RUN]` harvest OSM + download STEPS +
+   Google Places (butuh internet + `GOOGLE_PLACES_KEY`).
+2. **`02_preprocessing_pipeline.ipynb`** — sel `[RUN]` step 1→13 (memanggil
+   `Preprocessing/*.py`, output streaming di notebook).
+3. **`03_clustering.ipynb`** — sel `[RUN]` clustering K-Means.
+4. **`04_time_matrix.ipynb`** — sel `[RUN]` in-zone + all-pairs OSRM (butuh internet).
 
-# 03 — Clustering
-python 03_clustering/cluster_zones.py
-
-# 04 — Time matrix (lama, butuh koneksi OSRM)
-python 04_time_matrix/build_time_matrix.py
-python 04_time_matrix/build_time_matrix_allpairs.py
-```
+Tiap sel `[RUN]` skip otomatis kalau output sudah ada. Untuk rebuild dari nol,
+hapus file output terkait di `data/processed/` lalu jalankan ulang.
 
 ---
 

@@ -1,5 +1,5 @@
 """
-Visualisasikan clustered_venues.csv ke peta interaktif DKI Jakarta.
+Visualisasikan jakarta_tourism_venues_clustered.csv ke peta interaktif DKI Jakarta.
 Warna marker per kategori STEPS, popup menampilkan field Google Places lengkap.
 
 Output: data/processed/cluster_map.html
@@ -172,7 +172,7 @@ def main():
 
     folium.LayerControl(collapsed=False).add_to(m)
 
-    out_path = config.CLUSTERED_VENUES_CSV.replace("clustered_venues.csv", "cluster_map.html")
+    out_path = os.path.join(os.path.dirname(config.CLUSTERED_VENUES_CSV), "cluster_map.html")
     m.save(out_path)
     print(f"Tersimpan -> {out_path} ({len(df)} venue)")
 

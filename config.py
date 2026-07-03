@@ -30,9 +30,11 @@ TOURISM_FILTERS = {
     "amenity":  ["place_of_worship", "marketplace"],
 }
 
-# File output (OSM venue, pipeline 01_data_collection -> 02_preprocessing).
+# File output (OSM venue). Harvest inline di NB 02, cleaning di NB 03/clean_osm.py.
 RAW_CSV = "data/raw/venues_osm_raw.csv"          # mentah dari Overpass (collect_osm.py, no dedupe)
 CLEAN_CSV = "data/processed/venues_osm_clean.csv" # setelah dedupe + cluster-dedupe (clean_osm.py)
+# DEPRECATED: tidak dipakai pipeline. merge_sources.py match ke CLEAN_CSV
+# (venues_osm_clean.csv). Dipertahankan sekadar kompat lama.
 ENRICHED_CSV = "data/processed/venues_enriched.csv"
 
 # Hotel (titik berangkat/pulang itinerary) -- dipisah dari venue wisata krn
@@ -44,7 +46,7 @@ HOTEL_RAW_CSV = "data/raw/hotels_raw.csv"
 HOTEL_ENRICHED_CSV = "data/processed/hotels_enriched.csv"
 
 # Dataset Massive-STEPS-Jakarta (HuggingFace) -- check-in nyata, pelengkap
-# trajectory/popularitas yang OSM tidak punya (lihat 01_data_collection/collect_steps.py).
+# trajectory/popularitas yang OSM tidak punya (harvest inline di NB 02).
 STEPS_REPO_ID = "CRUISEResearchGroup/Massive-STEPS-Jakarta"
 STEPS_CHECKINS_FILENAME = "jakarta_checkins.csv"
 STEPS_CHECKINS_RAW_CSV = "data/raw/jakarta_checkins_raw.csv"         # mentah, output collect_steps.py

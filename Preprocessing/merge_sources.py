@@ -54,9 +54,9 @@ def main():
     # OSM enriched dipakai untuk osm_url + References saja.
     # Kalau file tidak ada (sudah dihapus), skip OSM matching —
     # jam buka diisi enrich_hours_google.py di step berikutnya.
-    if os.path.exists(config.ENRICHED_CSV):
-        osm = pd.read_csv(config.ENRICHED_CSV)
-        print(f"Venue OSM (enriched, kandidat match): {len(osm)}")
+    if os.path.exists(config.CLEAN_CSV):
+        osm = pd.read_csv(config.CLEAN_CSV)
+        print(f"Venue OSM (clean, kandidat match): {len(osm)}")
         osm_lat = osm["latitude"].to_numpy()
         osm_lon = osm["longitude"].to_numpy()
 
@@ -87,7 +87,7 @@ def main():
         print(f"\nBerhasil match ke OSM: {n_match}/{n_steps} ({pct_match:.1%})")
         print(f"Tidak match (kolom OSM default/kosong): {n_steps - n_match}")
     else:
-        print("venues_enriched.csv tidak ada — skip OSM matching.")
+        print("venues_osm_clean.csv tidak ada — skip OSM matching.")
         print("Jam buka akan diisi enrich_hours_google.py.")
         steps["osm_url"] = ""
         steps["References"] = ""

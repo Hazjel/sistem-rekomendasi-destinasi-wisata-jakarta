@@ -16,7 +16,7 @@ Cache lama (google_cache/) tidak di-overwrite.
 
 Input:  data/processed/merged_venues_enriched.csv
 Output: data/processed/merged_venues_enriched.csv (in-place)
-        data/processed/clustered_venues.csv (in-place, jika kolom zone_id ada)
+        data/processed/jakarta_tourism_venues_clustered.csv (in-place, jika kolom zone_id ada)
 """
 import json, os, sys, time
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')

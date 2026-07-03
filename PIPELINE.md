@@ -1,81 +1,106 @@
 # Pipeline ETL — Sistem Rekomendasi Destinasi Wisata Jakarta
 
-Jalankan script **berurutan** sesuai nomor folder. Tiap folder = 1 fase.
+Semua fase dijalankan dari **notebook** di `docs/notebooks/`, urut per nomor.
+Tiap sel `[RUN]` **cache-aware** (skip kalau output ada). Dataset final:
+**219 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
+kategori) — di-import semua notebook.
 
 ---
 
-## 01 — Data Collection (`01_data_collection/`)
+## NB 01 — Data Collection (`docs/notebooks/01_data_collection.ipynb`)
 
-Output ke `data/raw/` — **zero cleaning**, data mentah apa adanya.
+Kode collection **inline penuh** di notebook (tidak ada folder script terpisah).
 
-| Script | Output | Keterangan |
+| Sumber | Output | Keterangan |
 |--------|--------|-----------|
-| `collect_osm.py` | `data/raw/venues_osm_raw.csv` | Venue wisata dari OpenStreetMap Overpass API, boundary DKI Jakarta admin_level=4 |
-| `collect_steps.py` | `data/raw/jakarta_checkins_raw.csv` | 412.100 check-in nyata dari Massive-STEPS-Jakarta (HuggingFace) |
-| `collect_venues_google.py` | `data/raw/venues_google_raw.csv` | Venue wisata tambahan via Google Places Nearby Search (12 kategori x 21 anchor) |
-| `collect_hotels_google.py` | `data/processed/hotels_google.csv` | 280 hotel/penginapan via Google Places (titik start/end itinerary) |
+| OSM Overpass | `data/raw/venues_osm_raw.csv` | Venue wisata boundary DKI admin_level=4 |
+| Massive-STEPS (HuggingFace) | `data/raw/jakarta_checkins_raw.csv` | 412.100 check-in nyata |
+| Google Places venue | `data/raw/venues_google_raw.csv` | 12 kategori × 21 anchor |
+| Google Places hotel | `data/processed/hotels_google.csv` | 280 hotel raw |
 
-Butuh env var: `GOOGLE_PLACES_KEY`
-
----
-
-## 02 — Preprocessing (`02_preprocessing/`)
-
-Transformasi bertahap. Tiap script punya print **before/after** jumlah row.
-
-| Urutan | Script | Input | Output | Keterangan |
-|--------|--------|-------|--------|-----------|
-| 1 | `clean_osm.py` | `venues_osm_raw.csv` | `venues_osm_clean.csv` | Dedupe exact + cluster-dedupe venue besar (Monas, dll) |
-| 2 | `clean_steps.py` | `jakarta_checkins_raw.csv` | `steps_checkins_clean.csv` + `steps_venues_raw.csv` | Drop null, agregasi per venue, hitung checkin_count |
-| 3 | `filter_tourism.py` | `steps_venues_raw.csv` | `steps_filtered.csv` | 4 tahap: whitelist 14 kategori → keyword-exclude → blacklist eksplisit → dedupe nama |
-| 4 | `merge_sources.py` | `steps_filtered.csv` | `merged_venues.csv` | Gabung Massive-STEPS + OSM enrichment radius 150m |
-| 5 | `enrich_hours_google.py` | `merged_venues.csv` | `merged_venues_enriched.csv` | Enrich jam buka + 10 field Google Places. Fallback jam default per kategori jika tidak ditemukan |
-| 6 | `patch_address_cache.py` | cache + `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Backfill sublocality/locality dari addressComponents (administrative_area_level_4/2) |
-| 7 | `merge_google_venues.py` | `venues_google_raw.csv` + `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Tambah venue dari Google batch. Filter polygon DKI (bukan bbox) |
-| 8 | `retry_missing_venues.py` | `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Retry Google Places dengan query alternatif untuk venue yang masih default_category |
-| 9 | `clean_merged.py` | `merged_venues_enriched.csv` | `merged_venues_enriched.csv` | Filter: blacklist, luar polygon DKI, businessStatus CLOSED, temple/vihara kecil (checkin<5) |
-
-**Result setelah 02**: `data/processed/merged_venues_enriched.csv` — ~255 venue OPERATIONAL DKI Jakarta, lengkap jam buka per hari, google_rating, businessStatus, sublocality, aksesibilitas, dll.
+Butuh: internet + `GOOGLE_PLACES_KEY`. Cache Google di `google_venues_cache/`,
+`google_hotel_cache/`.
 
 ---
 
-## 03 — Clustering (`03_clustering/`)
+## NB 02 — Preprocessing (`docs/notebooks/02_preprocessing_pipeline.ipynb`)
 
-| Script | Input | Output | Keterangan |
-|--------|-------|--------|-----------|
-| `cluster_zones.py` | `merged_venues_enriched.csv` | `clustered_venues.csv` | K-Means k=8 by lat/lon → zone_id (0-7) untuk scope time matrix |
+13 step. Sel `[RUN]` memanggil script `Preprocessing/*.py` via `run_step()`
+(output streaming real-time ke notebook — before/after tetap terdokumentasi).
+Script enrichment API tetap `.py`: one-time, butuh API key + cache.
+
+| # | Script | Input | Output |
+|---|--------|-------|--------|
+| 1 | `clean_steps.py` | `jakarta_checkins_raw.csv` | `steps_checkins_clean.csv` + `steps_venues_raw.csv` |
+| 2 | `clean_osm.py` | `venues_osm_raw.csv` | `venues_osm_clean.csv` (dedupe + cluster-dedupe, self-contained) |
+| 3 | `filter_tourism.py` | `steps_venues_raw.csv` | `steps_filtered.csv` (whitelist 14 kategori) |
+| 4 | `merge_sources.py` | `steps_filtered.csv` + `venues_osm_clean.csv` | `merged_venues.csv` |
+| 5 | `enrich_hours_google.py` + `fill_default_hours.py` | `merged_venues.csv` | `merged_venues_enriched.csv` (jam nyata + rating + description) |
+| 6 | `merge_google_venues.py` | `venues_google_raw.csv` + `manual_venues.csv` | tambah venue Google + manual (idempoten) |
+| 7 | `patch_hours_websearch.py` | `merged_venues_enriched.csv` | patch jam 11 venue sumber resmi |
+| 8 | `fix_audit_issues.py` | `merged_venues_enriched.csv` | hapus noise, fix koordinat |
+| 9 | `clean_merged.py` | `merged_venues_enriched.csv` | blacklist + polygon DKI + businessStatus |
+| 10 | `enrich_address_google.py` | `merged_venues_enriched.csv` | backfill address |
+| 11 | `enrich_description_wikipedia.py` | `merged_venues_enriched.csv` | backfill description (TF-IDF) |
+| 12 | `add_time_spent.py` | `merged_venues_enriched.csv` | kolom `time_spent_minutes` |
+| 13 | `clean_hotels.py` | `hotels_google.csv` | `jakarta_hotels.csv` (181 hotel) |
+
+`dki_boundary.py` = helper polygon DKI (diimport step 9 & 6, bukan step).
+`archive/` = script satu-kali, bukan pipeline aktif.
+
+**Result**: `merged_venues_enriched.csv` — **219 venue** OPERATIONAL DKI, lengkap
+jam per hari, google_rating, description, address, time_spent_minutes.
 
 ---
 
-## 04 — Time Matrix (`04_time_matrix/`)
+## NB 03 — Clustering (`docs/notebooks/03_clustering.ipynb`)
 
-| Script | Input | Output | Keterangan |
-|--------|-------|--------|-----------|
-| `build_time_matrix.py` | `clustered_venues.csv` | `time_matrix.csv` | Waktu tempuh OSRM antar venue dalam zona yang sama (bukan lintas zona) |
-
-Waktu tempuh = **travel time** antar venue. Beda dari `time_spent` (durasi **di** venue, parameter GA/PSO).
+Kode K-Means **inline**. Input `merged_venues_enriched.csv` →
+`jakarta_tourism_venues_clustered.csv` (+zone_id) & `jakarta_tourism_venues.csv`
+(tanpa zone_id). K-Means k=8 by lat/lon → soft constraint cross-zone GA/PSO.
 
 ---
 
-## 05 — Modeling (`05_modeling/`)
+## NB 04 — Time Matrix (`docs/notebooks/04_time_matrix.ipynb`)
 
-**Belum diimplementasi.** Rencana:
-- GA (Genetic Algorithm) optimasi urutan kunjungan multi-hari
-- PSO (Particle Swarm Optimization) sebagai pembanding
-- Constraint: `time_matrix` + `time_spent` + jam buka + `price_level` + `good_for_children`
-- Evaluasi: konvergensi, user satisfaction score
+Kode OSRM **inline**. Butuh internet.
+
+| Output | Isi |
+|--------|-----|
+| `jakarta_travel_time_inzone.csv` | 3.919 pasangan in-zone (zone sama) |
+| `jakarta_travel_time_allpairs.csv` | 23.871 pasangan all-pairs (nC2) |
+
+100% OSRM, 0 fallback. In-zone = fitness penalty; all-pairs = lookup cross-zone.
 
 ---
 
-## 06 — API & Visualisasi (`06_api/`)
+## NB 05 — Modeling prototipe (`docs/notebooks/05_modeling.ipynb`)
 
-| Script | Keterangan |
-|--------|-----------|
-| `recommend.py` | Engine rekomendasi hybrid (TF-IDF + geo + google_rating + jam buka) |
-| `api.py` | REST API FastAPI — `GET /recommend?lat=...&lon=...&day=Sabtu` |
-| `make_map.py` | Generate peta interaktif HTML semua venue |
+Prototipe engine rekomendasi hybrid `06_api/recommend.py` (TF-IDF + geo + rating +
+jam). **Bukan** GA/PSO final — itu next phase di `05_modeling/`.
 
-Jalankan API: `uvicorn 06_api.api:app --reload` dari root project.
+---
+
+## 05_modeling — NEXT PHASE (belum diimplementasi)
+
+- GA optimasi urutan kunjungan multi-hari + PSO pembanding
+- Input: `jakarta_tourism_venues_clustered.csv` + `jakarta_travel_time_allpairs.csv` + `jakarta_hotels.csv`
+- Constraint TTDP: `arrival_time + time_spent_minutes ≤ closing_time`
+- Fitness: maximize satisfaction − penalti_waktu − penalti_cross_zone (soft)
+- Content-Based Filtering: TF-IDF dari `description` + `venue_category`
+- Evaluasi: konvergensi GA vs PSO, silhouette score
+
+---
+
+## 06_api — Prototipe API
+
+| Script | Input | Keterangan |
+|--------|-------|-----------|
+| `recommend.py` | `merged_venues_enriched.csv` | Engine rekomendasi hybrid |
+| `api.py` | — | REST API FastAPI — `GET /recommend?lat=...&lon=...&day=Sabtu` |
+| `make_map.py` | `jakarta_tourism_venues_clustered.csv` | Peta interaktif HTML |
+
+Jalankan API: `uvicorn 06_api.api:app --reload` dari root.
 
 ---
 
@@ -83,18 +108,26 @@ Jalankan API: `uvicorn 06_api.api:app --reload` dari root project.
 
 ```
 data/raw/
-  venues_osm_raw.csv          ← collect_osm.py
-  jakarta_checkins_raw.csv    ← collect_steps.py
-  venues_google_raw.csv       ← collect_venues_google.py
+  venues_osm_raw.csv          ← NB 01
+  jakarta_checkins_raw.csv    ← NB 01
+  venues_google_raw.csv       ← NB 01
+  manual_venues.csv           (manual)
 
 data/processed/
-  venues_osm_clean.csv        ← clean_osm.py
-  steps_checkins_clean.csv    ← clean_steps.py
-  steps_venues_raw.csv        ← clean_steps.py
-  steps_filtered.csv          ← filter_tourism.py
-  merged_venues.csv           ← merge_sources.py
-  merged_venues_enriched.csv  ← enrich_hours_google.py → clean_merged.py → merge_google_venues.py
-  clustered_venues.csv        ← cluster_zones.py
-  time_matrix.csv             ← build_time_matrix.py
-  hotels_google.csv           ← collect_hotels_google.py
+  hotels_google.csv           ← NB 01
+  steps_checkins_clean.csv    ← NB 02 step 1
+  steps_venues_raw.csv        ← NB 02 step 1
+  venues_osm_clean.csv        ← NB 02 step 2
+  steps_filtered.csv          ← NB 02 step 3
+  merged_venues.csv           ← NB 02 step 4
+  merged_venues_enriched.csv  ← NB 02 step 5-12
+  jakarta_tourism_venues.csv           ← NB 03
+  jakarta_tourism_venues_clustered.csv ← NB 03
+  jakarta_travel_time_inzone.csv       ← NB 04
+  jakarta_travel_time_allpairs.csv     ← NB 04
+  jakarta_hotels.csv                   ← NB 02 step 13
 ```
+
+> **Catatan**: `data/` di-gitignore — di-generate ulang via notebook, tidak
+> di-commit. Dataset final = 6 file yang dipakai fase modeling
+> (venues, clustered, inzone, allpairs, hotels, merged_venues_enriched).

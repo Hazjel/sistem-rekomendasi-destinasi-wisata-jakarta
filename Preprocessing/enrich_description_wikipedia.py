@@ -13,7 +13,7 @@ Cache: data/processed/wikipedia_cache/ (json per venue_id)
 
 Input:  data/processed/merged_venues_enriched.csv
 Output: data/processed/merged_venues_enriched.csv (in-place)
-        data/processed/clustered_venues.csv (in-place)
+        data/processed/jakarta_tourism_venues_clustered.csv (in-place)
 """
 import json, os, sys, time, unicodedata, re
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
