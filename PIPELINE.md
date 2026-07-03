@@ -74,10 +74,12 @@ Kode OSRM **inline**. Butuh internet.
 
 ---
 
-## NB 05 — Modeling prototipe (`docs/notebooks/05_modeling.ipynb`)
+## NB 05 — Modeling Fase 1: Content-Based Filtering (`docs/notebooks/05_modeling.ipynb`)
 
-Prototipe engine rekomendasi hybrid `06_api/recommend.py` (TF-IDF + geo + rating +
-jam). **Bukan** GA/PSO final — itu next phase di `05_modeling/`.
+FASE 1: TF-IDF (`venue_category+description`) + cosine similarity + **Bayesian
+weighted rating** (anti-bias venue sepi) + filter budget (proxy kategori).
+Output `cbf.candidates()` = kandidat top-N + skor satisfaction → input fitness
+GA/PSO di NB 06. Kode inti `05_modeling/cbf.py`.
 
 ---
 

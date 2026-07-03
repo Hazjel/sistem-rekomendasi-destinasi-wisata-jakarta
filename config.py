@@ -408,23 +408,25 @@ FITNESS_W_TIME = 1.0            # penalti total travel time (per jam perjalanan)
 FITNESS_W_ZONE = 0.3            # penalti per perpindahan lintas zona (soft)
 FITNESS_PENALTY_HOURS = 5.0     # penalti besar per pelanggaran jam buka (soft, smooth utk PSO)
 
-# --- Parameter GA ---
+# --- Parameter GA (hasil grid search tune.py 2026-07-04, mean rank 2 skenario) ---
 GA_POP_SIZE = 50
 GA_N_GEN = 200
-GA_CROSSOVER_RATE = 0.8
-GA_MUTATION_RATE = 0.2
+GA_CROSSOVER_RATE = 0.7         # tuned (base 0.8)
+GA_MUTATION_RATE = 0.3          # tuned (base 0.2) — mutasi tinggi bantu eksplorasi permutasi
 GA_TOURNAMENT_K = 3
 GA_ELITE = 2
 
-# --- Parameter PSO (diskrit, swap-sequence) ---
+# --- Parameter PSO (diskrit swap-sequence; hasil grid search 2026-07-04) ---
 PSO_N_PARTICLES = 50
 PSO_N_ITER = 200
-PSO_W = 0.7                     # inertia: prob. mempertahankan swap velocity lama
-PSO_C1 = 1.5                    # kognitif: tarikan ke pbest
-PSO_C2 = 1.5                    # sosial: tarikan ke gbest
+PSO_W = 0.4                     # tuned (base 0.7) — inertia rendah: swap lama cepat dibuang,
+                                # gerakan halus di permutasi panjang
+PSO_C1 = 1.0                    # tuned (base 1.5)
+PSO_C2 = 1.0                    # tuned (base 1.5)
 
-# --- Parameter GA-PSO Hybrid ---
-HYBRID_GA_REFRESH_EVERY = 10    # tiap N iterasi PSO, populasi di-refresh operator genetik
+# --- Parameter GA-PSO Hybrid (hasil grid search 2026-07-04) ---
+HYBRID_GA_REFRESH_EVERY = 5     # tuned (base 10) — refresh sering unggul besar di
+                                # problem 5 hari (-0.33 vs -3.57), tie-break vs 20
 
 # --- Eksperimen ---
 EXPERIMENT_N_RUNS = 10          # repetisi per algoritma (seed beda)

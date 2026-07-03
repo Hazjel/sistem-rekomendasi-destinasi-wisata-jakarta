@@ -3,7 +3,7 @@
 Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasis
 **Content-Based Filtering + Clustering + optimasi rute Genetic Algorithm & PSO**.
 
-> Pipeline dijalankan dari notebook `docs/notebooks/` (urut 01→05). Lihat [PIPELINE.md](PIPELINE.md).
+> Pipeline dijalankan dari notebook `docs/notebooks/` (urut 01→06). Lihat [PIPELINE.md](PIPELINE.md).
 
 > **Etika/Legal:** OSM = API harvesting objek terbuka (ODbL). Massive-STEPS =
 > dataset penelitian publik (HuggingFace). Scraping TripAdvisor **tidak dipakai**
@@ -74,7 +74,8 @@ docs/notebooks/
                                jakarta_travel_time_allpairs.csv (23.871 pasangan)
       Kode OSRM inline. Butuh koneksi internet.
 
-  05_modeling.ipynb          → prototipe engine rekomendasi hybrid (06_api/)
+  05_modeling.ipynb          → FASE 1 MODELING: Content-Based Filtering
+                               (TF-IDF + Bayesian rating + filter budget)
 
   06_optimization.ipynb      → FASE MODELING: CBF + GA vs PSO vs GA-PSO Hybrid
                                demo input turis → itinerary multi-hari + peta,
