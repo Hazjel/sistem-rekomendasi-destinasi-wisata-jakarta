@@ -3,7 +3,7 @@
 Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasis
 **Content-Based Filtering + Clustering + optimasi rute Genetic Algorithm & PSO**.
 
-> Pipeline dijalankan dari notebook `docs/notebooks/` (urut 01→06). Lihat [PIPELINE.md](PIPELINE.md).
+> Pipeline dijalankan dari notebook `notebooks/` (urut 01→06). Lihat [PIPELINE.md](PIPELINE.md).
 
 > **Etika/Legal:** OSM = API harvesting objek terbuka (ODbL). Massive-STEPS =
 > dataset penelitian publik (HuggingFace). Scraping TripAdvisor **tidak dipakai**
@@ -53,17 +53,17 @@ Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasi
 
 ## Pipeline (Jalankan via Notebook, Urut)
 
-Semua fase dijalankan dari **notebook** di `docs/notebooks/`. Tiap notebook =
+Semua fase dijalankan dari **notebook** di `notebooks/`. Tiap notebook =
 1 fase; jalankan sel `[RUN]` urut atas→bawah. Semua sel **cache-aware** (skip
 kalau output sudah ada — hapus file output untuk rebuild).
 
 ```
-docs/notebooks/
+notebooks/
   01_data_collection.ipynb   → data/raw/*  + hotels_google.csv
       Kode collection inline (OSM Overpass, STEPS HuggingFace, Google Places).
 
   02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (219 venue)
-      13 step. Sel [RUN] memanggil script Preprocessing/*.py via run_step()
+      13 step. Sel [RUN] memanggil script src/preprocessing/*.py via run_step()
       (output streaming real-time ke notebook). Script enrichment API tetap .py.
 
   03_clustering.ipynb        → jakarta_tourism_venues_clustered.csv (K-Means k=8)
@@ -85,15 +85,15 @@ docs/notebooks/
 Folder pendukung (bukan dijalankan langsung):
 
 ```
-Preprocessing/   15 script .py — dipanggil NB 02 via subprocess.
+src/preprocessing/   15 script .py — dipanggil NB 02 via subprocess.
                     dki_boundary.py = helper polygon (diimport, bukan step).
                     archive/ = script satu-kali, bukan pipeline aktif.
-05_modeling/     FASE MODELING (dipanggil NB 06):
+src/modeling/     FASE MODELING (dipanggil NB 06):
                     cbf.py      — TF-IDF + cosine + Bayesian rating + filter budget
                     problem.py  — TTDP: decoding time-budget + fitness
                     ga.py / pso.py / hybrid.py — 3 algoritma optimasi (manual numpy)
                     experiment.py — runner perbandingan → optimization_results.csv
-06_api/             recommend.py / api.py / make_map.py — prototipe API.
+src/api/             recommend.py / api.py / make_map.py — prototipe API.
 config.py           konstanta bersama (path, blacklist, kategori, param modeling).
 ```
 
@@ -121,12 +121,12 @@ GOOGLE_PLACES_KEY=your_api_key_here
 
 ### Jalankan Pipeline (full rebuild)
 
-Buka `docs/notebooks/` di Jupyter, jalankan urut:
+Buka `notebooks/` di Jupyter, jalankan urut:
 
 1. **`01_data_collection.ipynb`** — sel `[RUN]` harvest OSM + download STEPS +
    Google Places (butuh internet + `GOOGLE_PLACES_KEY`).
 2. **`02_preprocessing_pipeline.ipynb`** — sel `[RUN]` step 1→13 (memanggil
-   `Preprocessing/*.py`, output streaming di notebook).
+   `src/preprocessing/*.py`, output streaming di notebook).
 3. **`03_clustering.ipynb`** — sel `[RUN]` clustering K-Means.
 4. **`04_time_matrix.ipynb`** — sel `[RUN]` in-zone + all-pairs OSRM (butuh internet).
 
@@ -157,7 +157,7 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 
 ---
 
-## Fase Modeling (SELESAI — `05_modeling/` + NB 06)
+## Fase Modeling (SELESAI — `src/modeling/` + NB 06)
 
 **CBF (TF-IDF) + GA vs PSO vs GA-PSO Hybrid untuk TTDP multi-hari**
 
@@ -174,5 +174,5 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 - Hasil awal: Hybrid unggul di problem kecil (1 hari), GA unggul di 3-5 hari,
   PSO konsisten di bawah — detail `data/processed/optimization_results.csv`
 
-**Next**: web app prototipe (extend `06_api` — `POST /itinerary`), feedback loop
+**Next**: web app prototipe (extend `src/api` — `POST /itinerary`), feedback loop
 bobot fitness, laporan/paper.

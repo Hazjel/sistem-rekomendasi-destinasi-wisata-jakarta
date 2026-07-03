@@ -1,13 +1,13 @@
 # Pipeline ETL — Sistem Rekomendasi Destinasi Wisata Jakarta
 
-Semua fase dijalankan dari **notebook** di `docs/notebooks/`, urut per nomor.
+Semua fase dijalankan dari **notebook** di `notebooks/`, urut per nomor.
 Tiap sel `[RUN]` **cache-aware** (skip kalau output ada). Dataset final:
 **219 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
 kategori) — di-import semua notebook.
 
 ---
 
-## NB 01 — Data Collection (`docs/notebooks/01_data_collection.ipynb`)
+## NB 01 — Data Collection (`notebooks/01_data_collection.ipynb`)
 
 Kode collection **inline penuh** di notebook (tidak ada folder script terpisah).
 
@@ -23,9 +23,9 @@ Butuh: internet + `GOOGLE_PLACES_KEY`. Cache Google di `google_venues_cache/`,
 
 ---
 
-## NB 02 — Preprocessing (`docs/notebooks/02_preprocessing_pipeline.ipynb`)
+## NB 02 — Preprocessing (`notebooks/02_preprocessing_pipeline.ipynb`)
 
-13 step. Sel `[RUN]` memanggil script `Preprocessing/*.py` via `run_step()`
+13 step. Sel `[RUN]` memanggil script `src/preprocessing/*.py` via `run_step()`
 (output streaming real-time ke notebook — before/after tetap terdokumentasi).
 Script enrichment API tetap `.py`: one-time, butuh API key + cache.
 
@@ -53,7 +53,7 @@ jam per hari, google_rating, description, address, time_spent_minutes.
 
 ---
 
-## NB 03 — Clustering (`docs/notebooks/03_clustering.ipynb`)
+## NB 03 — Clustering (`notebooks/03_clustering.ipynb`)
 
 Kode K-Means **inline**. Input `merged_venues_enriched.csv` →
 `jakarta_tourism_venues_clustered.csv` (+zone_id) & `jakarta_tourism_venues.csv`
@@ -61,7 +61,7 @@ Kode K-Means **inline**. Input `merged_venues_enriched.csv` →
 
 ---
 
-## NB 04 — Time Matrix (`docs/notebooks/04_time_matrix.ipynb`)
+## NB 04 — Time Matrix (`notebooks/04_time_matrix.ipynb`)
 
 Kode OSRM **inline**. Butuh internet.
 
@@ -74,27 +74,27 @@ Kode OSRM **inline**. Butuh internet.
 
 ---
 
-## NB 05 — Modeling Fase 1: Content-Based Filtering (`docs/notebooks/05_modeling.ipynb`)
+## NB 05 — Modeling Fase 1: Content-Based Filtering (`notebooks/05_modeling.ipynb`)
 
 FASE 1: TF-IDF (`venue_category+description`) + cosine similarity + **Bayesian
 weighted rating** (anti-bias venue sepi) + filter budget (proxy kategori).
 Output `cbf.candidates()` = kandidat top-N + skor satisfaction → input fitness
-GA/PSO di NB 06. Kode inti `05_modeling/cbf.py`.
+GA/PSO di NB 06. Kode inti `src/modeling/cbf.py`.
 
 ---
 
-## NB 06 — Optimasi Itinerary (`docs/notebooks/06_optimization.ipynb`) + `05_modeling/`
+## NB 06 — Optimasi Itinerary (`notebooks/06_optimization.ipynb`) + `src/modeling/`
 
 FASE MODELING (selesai): CBF (TF-IDF) + 3 algoritma optimasi dibandingkan.
 
 | Modul | Isi |
 |-------|-----|
-| `05_modeling/cbf.py` | TF-IDF + cosine + Bayesian weighted rating + filter budget (proxy kategori) |
-| `05_modeling/problem.py` | TTDP: time-budget decoding + fitness (satisfaction − travel − cross_zone − penalti jam) |
-| `05_modeling/ga.py` | GA: OX crossover, tournament, swap mutation, elitism |
-| `05_modeling/pso.py` | PSO diskrit swap-sequence |
-| `05_modeling/hybrid.py` | GA-PSO hybrid (PSO + refresh genetik) |
-| `05_modeling/experiment.py` | runner 3 skenario × 3 algoritma × 10 run → `optimization_results.csv` + `optimization_convergence.csv` |
+| `src/modeling/cbf.py` | TF-IDF + cosine + Bayesian weighted rating + filter budget (proxy kategori) |
+| `src/modeling/problem.py` | TTDP: time-budget decoding + fitness (satisfaction − travel − cross_zone − penalti jam) |
+| `src/modeling/ga.py` | GA: OX crossover, tournament, swap mutation, elitism |
+| `src/modeling/pso.py` | PSO diskrit swap-sequence |
+| `src/modeling/hybrid.py` | GA-PSO hybrid (PSO + refresh genetik) |
+| `src/modeling/experiment.py` | runner 3 skenario × 3 algoritma × 10 run → `optimization_results.csv` + `optimization_convergence.csv` |
 
 Input: clustered + allpairs + hotels. Konstanta di `config.py` (bagian FASE MODELING).
 NB 06 = demo input turis → itinerary + peta folium + kurva konvergensi + tabel USS.
@@ -102,7 +102,7 @@ Silhouette score clustering ada di NB 03.
 
 ---
 
-## 06_api — Prototipe API
+## src/api — Prototipe API
 
 | Script | Input | Keterangan |
 |--------|-------|-----------|
@@ -110,7 +110,7 @@ Silhouette score clustering ada di NB 03.
 | `api.py` | — | REST API FastAPI — `GET /recommend?lat=...&lon=...&day=Sabtu` |
 | `make_map.py` | `jakarta_tourism_venues_clustered.csv` | Peta interaktif HTML |
 
-Jalankan API: `uvicorn 06_api.api:app --reload` dari root.
+Jalankan API: `uvicorn src.api.api:app --reload` dari root.
 
 ---
 
