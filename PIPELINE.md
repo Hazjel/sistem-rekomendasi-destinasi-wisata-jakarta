@@ -90,10 +90,11 @@ FASE MODELING (selesai): CBF (TF-IDF) + 3 algoritma optimasi dibandingkan.
 | Modul | Isi |
 |-------|-----|
 | `src/modeling/cbf.py` | TF-IDF + cosine + Bayesian weighted rating + filter budget (proxy kategori) |
-| `src/modeling/problem.py` | TTDP: time-budget decoding + fitness (satisfaction − travel − cross_zone − penalti jam) |
+| `src/modeling/problem.py` | TTDP: time-budget decoding (+ lunch break otomatis, jam tutup hard constraint) + fitness (satisfaction − travel − cross_zone − zone_revisit − penalti jam) |
 | `src/modeling/ga.py` | GA: OX crossover, tournament, swap mutation, elitism |
 | `src/modeling/pso.py` | PSO diskrit swap-sequence |
 | `src/modeling/hybrid.py` | GA-PSO hybrid (PSO + refresh genetik) |
+| `src/modeling/local_search.py` | 2-opt polish solusi akhir (hapus rute bolak-balik lokal; dipakai seragam 3 algoritma) |
 | `src/modeling/experiment.py` | runner 3 skenario × 3 algoritma × 10 run → `optimization_results.csv` + `optimization_convergence.csv` |
 
 Input: clustered + allpairs + hotels. Konstanta di `config.py` (bagian FASE MODELING).

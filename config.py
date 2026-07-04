@@ -400,18 +400,31 @@ DAY_END_MIN = 20 * 60           # 20:00 — harus kembali ke hotel
 MAX_DAYS = 5
 CANDIDATES_PER_DAY = 12         # top-N kandidat CBF = 12 x jumlah hari
 
+# --- Istirahat makan siang (disisipkan otomatis saat decoding) ---
+# Blok istirahat wajib per hari: dimulai dalam window [LUNCH_START, LUNCH_LATEST].
+# Kalau jam berjalan sudah melewati window tanpa break, break disisipkan sebelum
+# kunjungan berikutnya. Budget waktu harian efektif berkurang LUNCH_DURATION.
+LUNCH_START_MIN = 11 * 60 + 30  # window mulai 11:30
+LUNCH_LATEST_MIN = 13 * 60 + 30 # paling telat mulai 13:30
+LUNCH_DURATION_MIN = 60         # 60 menit
+
 # --- Bobot fitness (maximize) ---
-# fitness = SUM satisfaction - W_TIME*travel_norm - W_ZONE*cross_zone - penalti jam
+# fitness = SUM satisfaction - W_TIME*travel_norm - W_ZONE*cross_zone
+#           - W_REVISIT*zone_revisit - penalti jam
 FITNESS_W_SIM = 0.6             # bobot skor CBF dalam satisfaction
 FITNESS_W_POP = 0.4             # bobot rating ternormalisasi dalam satisfaction
 FITNESS_W_TIME = 1.0            # penalti total travel time (per jam perjalanan)
-FITNESS_W_ZONE = 0.3            # penalti per perpindahan lintas zona (soft)
+FITNESS_W_ZONE = 1.0            # penalti per perpindahan lintas zona (soft; naik dari 0.3)
+FITNESS_W_REVISIT = 3.0         # penalti per KEMBALI ke zona yang sudah ditinggal di hari
+                                # sama (pola bolak-balik; jauh lebih berat dari sekadar
+                                # pindah zona sekali)
 FITNESS_PENALTY_HOURS = 5.0     # penalti besar per pelanggaran jam buka (soft, smooth utk PSO)
 
-# --- Parameter GA (hasil grid search tune.py 2026-07-04, mean rank 2 skenario) ---
+# --- Parameter GA (grid search ulang 2026-07-04 setelah fitness v2:
+#     lunch break + hard closing + penalti zone-revisit) ---
 GA_POP_SIZE = 50
 GA_N_GEN = 200
-GA_CROSSOVER_RATE = 0.7         # tuned (base 0.8)
+GA_CROSSOVER_RATE = 0.8         # tuned fitness v2 (fitness v1: 0.7)
 GA_MUTATION_RATE = 0.3          # tuned (base 0.2) — mutasi tinggi bantu eksplorasi permutasi
 GA_TOURNAMENT_K = 3
 GA_ELITE = 2
@@ -424,9 +437,10 @@ PSO_W = 0.4                     # tuned (base 0.7) — inertia rendah: swap lama
 PSO_C1 = 1.0                    # tuned (base 1.5)
 PSO_C2 = 1.0                    # tuned (base 1.5)
 
-# --- Parameter GA-PSO Hybrid (hasil grid search 2026-07-04) ---
-HYBRID_GA_REFRESH_EVERY = 5     # tuned (base 10) — refresh sering unggul besar di
-                                # problem 5 hari (-0.33 vs -3.57), tie-break vs 20
+# --- Parameter GA-PSO Hybrid (grid search ulang setelah fitness v2) ---
+HYBRID_GA_REFRESH_EVERY = 10    # tuned fitness v2 (fitness v1: 5) — dgn hard
+                                # constraint jam tutup, refresh terlalu sering
+                                # justru mengganggu konvergensi PSO
 
 # --- Eksperimen ---
 EXPERIMENT_N_RUNS = 10          # repetisi per algoritma (seed beda)

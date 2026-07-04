@@ -17,6 +17,8 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 
+from local_search import two_opt
+
 
 def swap_sequence(from_perm, to_perm):
     """Daftar swap (i, j) minimal yang mengubah from_perm -> to_perm."""
@@ -42,8 +44,10 @@ def apply_swaps(perm, swaps):
 def run_pso(problem, seed=config.RANDOM_SEED,
             n_particles=config.PSO_N_PARTICLES, n_iter=config.PSO_N_ITER,
             w=config.PSO_W, c1=config.PSO_C1, c2=config.PSO_C2,
-            verbose=False):
-    """Returns dict: best_perm, best_fitness, history."""
+            verbose=False, polish=True):
+    """Returns dict: best_perm, best_fitness, history.
+
+    polish=True: gbest akhir dirapikan 2-opt local search."""
     rng = np.random.default_rng(seed)
     X = problem.init_population(n_particles, rng)
     V = [[] for _ in range(n_particles)]            # velocity awal kosong
@@ -79,6 +83,12 @@ def run_pso(problem, seed=config.RANDOM_SEED,
         if verbose and (it + 1) % 50 == 0:
             print(f"  iter {it+1:4d}: gbest={gbest_fit:.4f}")
 
+    if polish:
+        pre = gbest_fit
+        gbest, gbest_fit = two_opt(problem, gbest)
+        if verbose:
+            print(f"  2-opt polish: {pre:.4f} -> {gbest_fit:.4f}")
+        history.append(gbest_fit)
     return {"best_perm": gbest, "best_fitness": gbest_fit, "history": history}
 
 

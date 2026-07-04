@@ -17,6 +17,8 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 
+from local_search import two_opt
+
 
 def order_crossover(p1, p2, rng):
     """OX: salin segmen acak dari p1, sisanya diisi urutan gen p2."""
@@ -51,8 +53,11 @@ def run_ga(problem, seed=config.RANDOM_SEED,
            pop_size=config.GA_POP_SIZE, n_gen=config.GA_N_GEN,
            cx_rate=config.GA_CROSSOVER_RATE, mut_rate=config.GA_MUTATION_RATE,
            tournament_k=config.GA_TOURNAMENT_K, n_elite=config.GA_ELITE,
-           verbose=False):
-    """Returns dict: best_perm, best_fitness, history (best fitness/generasi)."""
+           verbose=False, polish=True):
+    """Returns dict: best_perm, best_fitness, history (best fitness/generasi).
+
+    polish=True: solusi akhir dirapikan 2-opt local search (hapus pola
+    bolak-balik lokal yang lolos dari operator GA)."""
     rng = np.random.default_rng(seed)
     pop = problem.init_population(pop_size, rng)
     fits = [problem.fitness(p) for p in pop]
@@ -77,7 +82,13 @@ def run_ga(problem, seed=config.RANDOM_SEED,
             print(f"  gen {gen+1:4d}: best={best:.4f}")
 
     bi = int(np.argmax(fits))
-    return {"best_perm": pop[bi], "best_fitness": fits[bi], "history": history}
+    best_perm, best_fit = pop[bi], fits[bi]
+    if polish:
+        best_perm, best_fit = two_opt(problem, best_perm)
+        if verbose:
+            print(f"  2-opt polish: {fits[bi]:.4f} -> {best_fit:.4f}")
+        history.append(best_fit)
+    return {"best_perm": best_perm, "best_fitness": best_fit, "history": history}
 
 
 if __name__ == "__main__":

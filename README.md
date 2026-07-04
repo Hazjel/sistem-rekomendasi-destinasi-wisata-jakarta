@@ -164,15 +164,17 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 - FASE 1 — CBF: TF-IDF `venue_category+description` + Bayesian weighted rating
   + filter budget (proxy kategori) → kandidat top-N + skor satisfaction
 - FASE 2 — Optimasi: permutasi kandidat + time-budget decoding (mulai/selesai
-  di hotel, cek jam buka per hari). Constraint TTDP `arrival + time_spent ≤
-  closing` (penalti soft). Fitness = Σsatisfaction − w·travel − w·cross_zone
-  − penalti jam
+  di hotel, cek jam buka per hari, **istirahat makan siang 60 mnt otomatis**
+  window 11:30–13:30). Constraint jam tutup **hard** — venue yang bakal
+  melanggar ditunda ke hari lain, itinerary output selalu valid.
+  Fitness = Σsatisfaction − w·travel − w·cross_zone − w·zone_revisit
+  (penalti bolak-balik ke zona yang sudah ditinggal) − penalti jam
 - 3 algoritma manual numpy: GA (OX + tournament + elitism), PSO diskrit
-  (swap-sequence), GA-PSO Hybrid (PSO + refresh genetik)
+  (swap-sequence), GA-PSO Hybrid (PSO + refresh genetik) — semuanya di-polish
+  **2-opt local search** di akhir (hapus pola rute bolak-balik lokal)
 - Evaluasi: konvergensi (10 run ± std), **User Satisfaction Score** kuantitatif,
   runtime, silhouette clustering (NB 03)
-- Hasil awal: Hybrid unggul di problem kecil (1 hari), GA unggul di 3-5 hari,
-  PSO konsisten di bawah — detail `data/processed/optimization_results.csv`
+- Hasil: lihat `data/processed/optimization_results.csv` + kesimpulan NB 06
 
 **Next**: web app prototipe (extend `src/api` — `POST /itinerary`), feedback loop
 bobot fitness, laporan/paper.

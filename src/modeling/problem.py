@@ -4,7 +4,9 @@ Formulasi TTDP (Tourist Trip Design Problem) — fondasi untuk GA/PSO/Hybrid.
 Isi:
   - TTDPProblem: load dataset final + time matrix lookup + hotel
   - decode(): permutasi venue -> itinerary per hari (time-budget decoding)
-  - fitness(): SUM satisfaction - penalti travel - penalti cross-zone - penalti jam
+  - fitness(): SUM satisfaction - penalti travel - penalti cross-zone
+               - penalti zone-revisit (bolak-balik) - penalti jam
+  - Decoding menyisipkan istirahat makan siang 1x/hari (window di config.py)
 
 Decoding time-budget (representasi solusi = permutasi kandidat venue):
   Iterasi urutan venue; per hari akumulasi (travel + time_spent) mulai dari hotel.
@@ -141,12 +143,15 @@ class TTDPProblem:
           visited     : set venue_id terkunjungi
           travel_total: menit perjalanan total (termasuk hotel legs)
           cross_zone  : jumlah perpindahan antar venue beda zona
+          zone_revisit: jumlah 'balik lagi' ke zona yang sudah ditinggal
+                        di hari yang sama (pola bolak-balik)
           violations  : jumlah pelanggaran jam buka (soft — venue tetap
                         'dikunjungi' tapi kena penalti besar di fitness)
         """
         order = [self.candidates[i] for i in perm]
         days, visited = [], set()
         travel_total, cross_zone, violations = 0.0, 0, 0
+        zone_revisit = 0   # pola bolak-balik: kembali ke zona yg sudah ditinggal (per hari)
 
         queue = list(order)
         for di in range(self.n_days):
@@ -155,7 +160,22 @@ class TTDPProblem:
             t = self.day_start
             prev = None      # None = masih di hotel
             leftover = []
+            lunch_done = False
+            zones_seen, cur_zone = set(), None
             for vid in queue:
+                # Istirahat makan siang: sisipkan sekali per hari begitu jam
+                # berjalan masuk window (LUNCH_START..). Kalau kunjungan panjang
+                # melewati window, break disisipkan setelahnya (telat tapi tetap ada).
+                if not lunch_done and t >= config.LUNCH_START_MIN:
+                    visits.append({
+                        "venue_id": None, "name": "(istirahat makan siang)",
+                        "depart_prev": t, "travel_min": 0.0, "from_hotel": False,
+                        "arrival": t, "start": t,
+                        "depart": t + config.LUNCH_DURATION_MIN,
+                        "wait": 0.0, "violation": False, "is_break": True,
+                    })
+                    t += config.LUNCH_DURATION_MIN
+                    lunch_done = True
                 info = self._info[vid]
                 leg = info["hotel_min"] if prev is None else self.travel_min(prev, vid)
                 arrive = t + leg
@@ -170,7 +190,12 @@ class TTDPProblem:
                 if depart + back > self.day_end:
                     leftover.append(vid)
                     continue
-                violated = depart > close_m       # constraint TTDP (soft)
+                # constraint jam tutup: HARD — tunda ke hari lain, jangan
+                # kunjungi sambil melanggar (itinerary output selalu valid)
+                if depart > close_m:
+                    leftover.append(vid)
+                    continue
+                violated = False                  # selalu False (hard constraint)
                 visits.append({
                     "venue_id": vid, "name": info["name"],
                     "depart_prev": t,             # jam berangkat dari titik sebelumnya
@@ -178,13 +203,21 @@ class TTDPProblem:
                     "from_hotel": prev is None,   # leg ini berangkat dari hotel?
                     "arrival": arrive, "start": start_visit, "depart": depart,
                     "wait": start_visit - arrive, # menunggu venue buka (menit)
-                    "violation": violated,
+                    "violation": violated, "is_break": False,
                 })
                 if violated:
                     violations += 1
                 travel_total += leg
                 if prev is not None and self._info[prev]["zone"] != info["zone"]:
                     cross_zone += 1
+                # deteksi bolak-balik: masuk zona yg sudah pernah dikunjungi
+                # LALU ditinggal di hari yang sama
+                z = info["zone"]
+                if z != cur_zone:
+                    if z in zones_seen:
+                        zone_revisit += 1
+                    zones_seen.add(z)
+                    cur_zone = z
                 visited.add(vid)
                 prev, t = vid, depart
             if prev is not None:                  # balik hotel
@@ -196,6 +229,7 @@ class TTDPProblem:
                     "from_hotel": False,
                     "arrival": t + back_min, "start": t + back_min,
                     "depart": t + back_min, "wait": 0.0, "violation": False,
+                    "is_break": False,
                 })
             days.append(visits)
             queue = leftover
@@ -203,7 +237,8 @@ class TTDPProblem:
                 break
 
         return {"days": days, "visited": visited, "travel_total": travel_total,
-                "cross_zone": cross_zone, "violations": violations}
+                "cross_zone": cross_zone, "zone_revisit": zone_revisit,
+                "violations": violations}
 
     # ------------------------------------------------------------------
     def fitness(self, perm):
@@ -213,6 +248,7 @@ class TTDPProblem:
         return (sat
                 - config.FITNESS_W_TIME * (d["travel_total"] / 60.0)
                 - config.FITNESS_W_ZONE * d["cross_zone"]
+                - config.FITNESS_W_REVISIT * d["zone_revisit"]
                 - config.FITNESS_PENALTY_HOURS * d["violations"])
 
     # ------------------------------------------------------------------

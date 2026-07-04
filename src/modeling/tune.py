@@ -55,9 +55,11 @@ def _problems():
 
 
 def _eval(fn, prob, n_runs=N_RUNS, **kwargs):
+    # polish=False: 2-opt diterapkan seragam ke semua algoritma di eksperimen
+    # akhir, jadi tuning cukup mengukur kualitas parameter inti (juga 2x cepat)
     fits = []
     for r in range(n_runs):
-        res = fn(prob, seed=config.RANDOM_SEED + r, **kwargs)
+        res = fn(prob, seed=config.RANDOM_SEED + r, polish=False, **kwargs)
         fits.append(res["best_fitness"])
     return float(np.mean(fits)), float(np.std(fits))
 
