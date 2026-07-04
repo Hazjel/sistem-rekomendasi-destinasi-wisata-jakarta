@@ -28,10 +28,10 @@ Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasi
 
 | File | Isi | Keterangan |
 |------|-----|-----------|
-| `data/processed/jakarta_tourism_venues.csv` | **163 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
-| `data/processed/jakarta_tourism_venues_clustered.csv` | 163 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
-| `data/processed/jakarta_travel_time_inzone.csv` | **2.301 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
-| `data/processed/jakarta_travel_time_allpairs.csv` | **13.203 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
+| `data/processed/jakarta_tourism_venues.csv` | **162 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
+| `data/processed/jakarta_tourism_venues_clustered.csv` | 162 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
+| `data/processed/jakarta_travel_time_inzone.csv` | **2.289 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
+| `data/processed/jakarta_travel_time_allpairs.csv` | **13.041 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
 | `data/processed/jakarta_hotels.csv` | **181 hotel** bersih (daratan Jakarta) | Titik berangkat/pulang itinerary |
 
 ### Kolom Kunci Dataset Venue
@@ -62,7 +62,7 @@ notebooks/
   01_data_collection.ipynb   → data/raw/*  + hotels_google.csv
       Kode collection inline (OSM Overpass, STEPS HuggingFace, Google Places).
 
-  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (163 venue)
+  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (162 venue)
       13 step. Sel [RUN] memanggil script src/preprocessing/*.py via run_step()
       (output streaming real-time ke notebook). Script enrichment API tetap .py.
 
@@ -70,8 +70,8 @@ notebooks/
                                jakarta_tourism_venues.csv (tanpa zone_id)
       Kode clustering inline.
 
-  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (2.301 pasangan)
-                               jakarta_travel_time_allpairs.csv (13.203 pasangan)
+  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (2.289 pasangan)
+                               jakarta_travel_time_allpairs.csv (13.041 pasangan)
       Kode OSRM inline. Butuh koneksi internet.
 
   05_modeling.ipynb          → FASE 1 MODELING: Content-Based Filtering

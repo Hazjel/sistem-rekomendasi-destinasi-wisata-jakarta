@@ -57,6 +57,7 @@ def main():
         "wahana happy feet",     # wahana di dalam Ancol/Dufan, bukan destinasi mandiri
         "lubang buaya",          # bagian kompleks Monumen Pancasila Sakti (6970, keep)
         "museum pengkhianatan pki",  # di dalam kompleks Monumen Pancasila Sakti
+        "schmutzer primate center",  # di dalam kompleks Ragunan Zoo (akses lewat kebun binatang)
         # "trick art japanese 3d painting exhibition",  # KEEP: venue wisata unik (82 checkin)
     }
     mask_force = name_lower.isin(FORCE_REMOVE)

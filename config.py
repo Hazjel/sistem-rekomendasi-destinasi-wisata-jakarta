@@ -431,25 +431,25 @@ FITNESS_W_REVISIT_DAY = 1.0     # penalti per zona yang dikunjungi LAGI di hari 
 CBF_MMR_LAMBDA = 0.7
 FITNESS_PENALTY_HOURS = 5.0     # penalti besar per pelanggaran jam buka (soft, smooth utk PSO)
 
-# --- Parameter GA (grid search FINAL 2026-07-04, dataset 163 venue dedup +
+# --- Parameter GA (grid search FINAL 2026-07-04, dataset 162 venue dedup +
 #     fitness v3: MMR kandidat + penalti zone revisit intra & lintas-hari) ---
 GA_POP_SIZE = 50
 GA_N_GEN = 200
-GA_CROSSOVER_RATE = 0.7         # tuned dataset-163
-GA_MUTATION_RATE = 0.2          # tuned dataset-163
+GA_CROSSOVER_RATE = 0.7         # tuned dataset-162
+GA_MUTATION_RATE = 0.2          # tuned dataset-162
 GA_TOURNAMENT_K = 3
 GA_ELITE = 2
 
 # --- Parameter PSO (diskrit swap-sequence; hasil grid search 2026-07-04) ---
 PSO_N_PARTICLES = 50
 PSO_N_ITER = 200
-PSO_W = 0.4                     # tuned (base 0.7) — inertia rendah: swap lama cepat dibuang,
-                                # gerakan halus di permutasi panjang
-PSO_C1 = 1.0                    # tuned dataset-163 (base 1.5)
-PSO_C2 = 1.0                    # tuned dataset-163 (base 1.5)
+PSO_W = 0.5                     # tuned dataset-162 (base 0.7) — inertia rendah:
+                                # swap lama cepat dibuang, gerakan halus
+PSO_C1 = 1.5                    # tuned dataset-162
+PSO_C2 = 1.5                    # tuned dataset-162
 
-# --- Parameter GA-PSO Hybrid (grid search final dataset-163) ---
-HYBRID_GA_REFRESH_EVERY = 5     # tuned dataset-163 (base 10)
+# --- Parameter GA-PSO Hybrid (grid search final dataset-162) ---
+HYBRID_GA_REFRESH_EVERY = 10    # tuned dataset-162
 
 # --- Eksperimen ---
 EXPERIMENT_N_RUNS = 10          # repetisi per algoritma (seed beda)
