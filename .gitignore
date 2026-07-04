@@ -10,8 +10,8 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# data hasil generate (re-generate via collect.py + enrich.py)
-data/
+# data/ di-track via Git LFS (lihat .gitattributes) — dataset final + cache
+# di-share ke rekan tim biar tidak perlu rebuild dari nol / pakai API key sendiri.
 
 # IDE / OS
 .vscode/
