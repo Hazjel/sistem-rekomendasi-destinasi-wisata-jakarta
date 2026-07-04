@@ -57,18 +57,24 @@ def _hhmm(minutes):
 
 def build_itinerary(preference_text=None, budget="menengah", n_days=2,
                     start_day="Sabtu", hotel_id=None, venue_ids=None,
-                    algorithm="ga", seed=config.RANDOM_SEED):
+                    algorithm="auto", seed=config.RANDOM_SEED):
     """Susun itinerary multi-hari. Returns dict siap di-JSON-kan.
 
     venue_ids None  -> mode OTOMATIS: kandidat dari CBF top-N (MMR)
     venue_ids [...] -> mode MANUAL (ala go-routes): user pilih sendiri;
                        satisfaction tetap dari CBF (preferensi boleh kosong ->
                        fallback popularitas Bayesian)
+    algorithm "auto" -> pilih otomatis berdasar HASIL EKSPERIMEN dataset 162
+                       (90 run/algoritma): Hybrid unggul problem kecil-menengah
+                       (1-3 hari), GA unggul problem besar (4-5 hari) + tercepat.
+                       Nilai eksplisit ga/pso/hybrid tetap didukung utk riset.
     """
-    if algorithm not in _ALGOS:
-        raise ValueError(f"algorithm harus salah satu {list(_ALGOS)}")
     if not 1 <= n_days <= config.MAX_DAYS:
         raise ValueError(f"n_days harus 1..{config.MAX_DAYS}")
+    if algorithm == "auto":
+        algorithm = "hybrid" if n_days <= 3 else "ga"
+    if algorithm not in _ALGOS:
+        raise ValueError(f"algorithm harus 'auto' atau salah satu {list(_ALGOS)}")
 
     # --- kandidat + satisfaction ---
     if venue_ids:

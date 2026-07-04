@@ -51,7 +51,10 @@ class ItineraryRequest(BaseModel):
     venue_ids: list[str] | None = Field(
         None, description="Mode MANUAL: daftar venue_id pilihan user "
                           "(dari GET /venues). None -> mode otomatis (CBF).")
-    algorithm: str = Field("ga", description="ga / pso / hybrid")
+    algorithm: str = Field(
+        "auto", description="auto (default — pilih otomatis dari hasil "
+                            "eksperimen: hybrid utk 1-3 hari, ga utk 4-5) "
+                            "/ ga / pso / hybrid")
 
 
 @app.get("/venues")
