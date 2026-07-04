@@ -103,15 +103,18 @@ Silhouette score clustering ada di NB 03.
 
 ---
 
-## src/api — Prototipe API
+## src/api — API Web App
 
-| Script | Input | Keterangan |
-|--------|-------|-----------|
-| `recommend.py` | `merged_venues_enriched.csv` | Engine rekomendasi hybrid |
-| `api.py` | — | REST API FastAPI — `GET /recommend?lat=...&lon=...&day=Sabtu` |
-| `make_map.py` | `jakarta_tourism_venues_clustered.csv` | Peta interaktif HTML |
+| Script | Keterangan |
+|--------|-----------|
+| `api.py` | REST API FastAPI: `GET /venues`, `GET /hotels`, `POST /itinerary` (+ CORS utk frontend :5173) |
+| `itinerary_service.py` | Glue CBF + TTDP + GA/PSO/Hybrid (reuse `src/modeling/*`, load data sekali saat startup) |
+| `make_map.py` | Peta cluster interaktif HTML (`cluster_map.html`) |
+| `recommend.py` | Prototipe lama (artifact, tidak dipakai API) |
 
-Jalankan API: `uvicorn src.api.api:app --reload` dari root.
+Jalankan API: `uvicorn src.api.api:app --reload` dari root (port 8000).
+Frontend: repo terpisah [web-wisata-jakarta](https://github.com/Hazjel/web-wisata-jakarta)
+(Vite + React, `npm run dev` port 5173, proxy `/api` → 8000).
 
 ---
 

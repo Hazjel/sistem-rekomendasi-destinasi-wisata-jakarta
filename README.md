@@ -180,5 +180,20 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
   runtime, silhouette clustering (NB 03)
 - Hasil: lihat `data/processed/optimization_results.csv` + kesimpulan NB 06
 
-**Next**: web app prototipe (extend `src/api` — `POST /itinerary`), feedback loop
-bobot fitness, laporan/paper.
+---
+
+## Web App (SELESAI — API di `src/api/`, frontend repo terpisah)
+
+Arsitektur 2 repo:
+
+- **Backend (repo ini)** — FastAPI: `GET /venues`, `GET /hotels`,
+  `POST /itinerary` (CBF + GA/PSO/Hybrid, reuse `src/modeling/*`).
+  File: `src/api/api.py` (endpoint) + `src/api/itinerary_service.py` (glue).
+  Jalankan: `uvicorn src.api.api:app --reload` (port 8000).
+- **Frontend** — repo [web-wisata-jakarta](https://github.com/Hazjel/web-wisata-jakarta)
+  (Vite + React + react-leaflet): form 2 mode (otomatis via preferensi CBF /
+  pilih venue manual ala go-routes), kartu itinerary per hari, peta rute
+  jalan asli OSRM. Jalankan: `npm install && npm run dev` (port 5173,
+  proxy `/api` → 8000).
+
+**Next**: feedback loop bobot fitness, deploy hosting, laporan/paper.

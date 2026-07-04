@@ -1,0 +1,157 @@
+"""
+Service layer API itinerary — glue FASE 1 (CBF) + FASE 2 (GA/PSO/Hybrid).
+
+Reuse penuh src/modeling/* (satu sumber kebenaran dgn notebook 06):
+  - ContentBasedFilter : TF-IDF + Bayesian rating + filter budget + MMR
+  - TTDPProblem        : time-budget decoding (lunch break, jam tutup hard)
+  - run_ga/run_pso/run_hybrid : optimizer + 2-opt polish
+
+Semua data (venue, hotel, time matrix) diload SEKALI saat modul diimport —
+request berikutnya tinggal optimasi (~1-3 dtk GA).
+"""
+import os
+import sys
+
+import pandas as pd
+
+_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
+sys.path.insert(0, _ROOT)
+sys.path.insert(0, os.path.join(_ROOT, "src", "modeling"))
+
+import config
+from cbf import ContentBasedFilter
+from ga import run_ga
+from hybrid import run_hybrid
+from problem import TTDPProblem
+from pso import run_pso
+
+_ALGOS = {"ga": run_ga, "pso": run_pso, "hybrid": run_hybrid}
+
+# --- load sekali saat startup ---
+cbf = ContentBasedFilter()
+hotels = pd.read_csv(config.HOTELS_CSV)
+hotels = hotels.reset_index().rename(columns={"index": "hotel_id"})
+venues = pd.read_csv(config.CLUSTERED_VENUES_CSV)
+
+
+def list_venues():
+    """Semua venue utk mode pilih-manual + peta (ringan, kolom seperlunya)."""
+    out = venues.copy()
+    out["price_level"] = out["venue_category"].map(
+        lambda c: config.CATEGORY_PRICE_LEVEL.get(
+            c, config.CATEGORY_PRICE_LEVEL["DEFAULT"]))
+    cols = ["venue_id", "name", "venue_category", "zone_id",
+            "google_rating", "price_level", "latitude", "longitude"]
+    return out[cols].fillna({"google_rating": 0}).to_dict(orient="records")
+
+
+def list_hotels():
+    """Semua hotel utk dropdown (hotel_id = index baris CSV, stabil)."""
+    cols = ["hotel_id", "name", "google_rating", "latitude", "longitude"]
+    return hotels[cols].fillna({"google_rating": 0}).to_dict(orient="records")
+
+
+def _hhmm(minutes):
+    return f"{int(minutes) // 60:02d}:{int(minutes) % 60:02d}"
+
+
+def build_itinerary(preference_text=None, budget="menengah", n_days=2,
+                    start_day="Sabtu", hotel_id=None, venue_ids=None,
+                    algorithm="ga", seed=config.RANDOM_SEED):
+    """Susun itinerary multi-hari. Returns dict siap di-JSON-kan.
+
+    venue_ids None  -> mode OTOMATIS: kandidat dari CBF top-N (MMR)
+    venue_ids [...] -> mode MANUAL (ala go-routes): user pilih sendiri;
+                       satisfaction tetap dari CBF (preferensi boleh kosong ->
+                       fallback popularitas Bayesian)
+    """
+    if algorithm not in _ALGOS:
+        raise ValueError(f"algorithm harus salah satu {list(_ALGOS)}")
+    if not 1 <= n_days <= config.MAX_DAYS:
+        raise ValueError(f"n_days harus 1..{config.MAX_DAYS}")
+
+    # --- kandidat + satisfaction ---
+    if venue_ids:
+        known = set(venues["venue_id"].astype(str))
+        bad = [v for v in venue_ids if str(v) not in known]
+        if bad:
+            raise ValueError(f"venue_id tidak dikenal: {bad}")
+        ids = list(venue_ids)
+        scored = cbf.score(preference_text or None, budget)
+        sat_all = dict(zip(scored["venue_id"], scored["satisfaction"]))
+        # venue pilihan user di luar filter budget tetap dihormati (user tahu
+        # harganya) — satisfaction fallback 0.5 netral kalau tak ada di scored
+        sat = {v: float(sat_all.get(v, 0.5)) for v in ids}
+    else:
+        if not preference_text:
+            raise ValueError("mode otomatis butuh preference_text")
+        ids, sat = cbf.candidates(n_days, preference_text, budget)
+
+    # --- hotel ---
+    hotel = None
+    if hotel_id is not None:
+        row = hotels[hotels["hotel_id"] == hotel_id]
+        if row.empty:
+            raise ValueError(f"hotel_id tidak dikenal: {hotel_id}")
+        hotel = row.iloc[0]
+
+    # --- optimasi ---
+    prob = TTDPProblem(ids, hotel=hotel, n_days=n_days, start_day=start_day,
+                       satisfaction=sat)
+    res = _ALGOS[algorithm](prob, seed=seed)
+    d = prob.decode(res["best_perm"])
+
+    # --- serialisasi ---
+    vidx = venues.set_index("venue_id")
+    days_out = []
+    for di, day in enumerate(d["days"]):
+        visits = []
+        for v in day:
+            item = {
+                "type": ("break" if v.get("is_break")
+                         else "return" if v["venue_id"] is None
+                         else "visit"),
+                "venue_id": v["venue_id"],
+                "name": v["name"],
+                "depart_prev": _hhmm(v["depart_prev"]),
+                "travel_min": round(v["travel_min"], 1),
+                "from_hotel": v["from_hotel"],
+                "arrival": _hhmm(v["arrival"]),
+                "start": _hhmm(v["start"]),
+                "depart": _hhmm(v["depart"]),
+                "wait_min": round(v["wait"], 1),
+            }
+            if item["type"] == "visit":
+                r = vidx.loc[v["venue_id"]]
+                item["latitude"] = float(r["latitude"])
+                item["longitude"] = float(r["longitude"])
+                item["venue_category"] = r["venue_category"]
+            visits.append(item)
+        days_out.append({"day_index": di + 1,
+                         "day_name": prob.day_names[di],
+                         "visits": visits})
+
+    not_fitted = [
+        {"venue_id": v, "name": vidx.loc[v]["name"]}
+        for v in ids if v not in d["visited"]
+    ]
+    return {
+        "hotel": {"name": prob.hotel_name,
+                  "latitude": prob.hotel_lat, "longitude": prob.hotel_lon},
+        "params": {"preference_text": preference_text, "budget": budget,
+                   "n_days": n_days, "start_day": start_day,
+                   "algorithm": algorithm,
+                   "mode": "manual" if venue_ids else "otomatis"},
+        "summary": {
+            "fitness": round(float(res["best_fitness"]), 4),
+            "n_candidates": len(ids),
+            "n_visited": len(d["visited"]),
+            "travel_total_min": round(d["travel_total"], 1),
+            "cross_zone": d["cross_zone"],
+            "zone_revisit": d["zone_revisit"],
+            "zone_revisit_day": d["zone_revisit_day"],
+            "violations": d["violations"],
+        },
+        "days": days_out,
+        "not_fitted": not_fitted,
+    }
