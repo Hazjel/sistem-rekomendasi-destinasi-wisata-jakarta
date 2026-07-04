@@ -42,6 +42,21 @@ def main():
         "kidzania",              # dalam mall (Pacific Place), bukan destinasi mandiri
         "sky rink ice skating",  # dalam mall (Taman Anggrek Lt 3), bukan destinasi mandiri
         "masjid jami' at-taqwa", # masjid lingkungan biasa (checkin 11 > proteksi, force)
+        "istiqlal mosque fountain",  # air mancur = sub-fitur Masjid Istiqlal, bukan destinasi
+        "taman nias",            # taman lingkungan RT/RW Kelapa Gading, bukan destinasi
+        # --- duplikat: tempat sama terdaftar 2x (audit deskripsi 2026-07-04) ---
+        "satriamandala museum",  # dup Museum Satriamandala (6627, keep versi STEPS)
+        "dufan ancol",           # dup Dunia Fantasi (DUFAN) (458)
+        "jakarta maritime museum",  # dup Museum Bahari (1005)
+        "national museum of indonesia",  # dup Museum Nasional Indonesia (328)
+        "klenteng petak sembilan",  # nama lain Wihara Dharma Bhakti (31626)
+        "taman proklamator",     # situs sama dgn Tugu Proklamasi (8381)
+        "allianz eco park",      # nama lama Ocean Ecopark (google_00089)
+        "museum batik",          # di dalam kompleks Museum Tekstil (337)
+        # --- sub-venue kompleks (logika sama dgn TMII: satu tiket satu kunjungan) ---
+        "wahana happy feet",     # wahana di dalam Ancol/Dufan, bukan destinasi mandiri
+        "lubang buaya",          # bagian kompleks Monumen Pancasila Sakti (6970, keep)
+        "museum pengkhianatan pki",  # di dalam kompleks Monumen Pancasila Sakti
         # "trick art japanese 3d painting exhibition",  # KEEP: venue wisata unik (82 checkin)
     }
     mask_force = name_lower.isin(FORCE_REMOVE)
@@ -88,7 +103,21 @@ def main():
     mask_small_temple = df.apply(is_small_temple, axis=1)
     small_temple_names = df.loc[mask_small_temple & ~mask_blacklist & ~mask_outside & ~mask_closed, "name"].tolist()
 
-    mask_drop = mask_blacklist | mask_outside | mask_closed | mask_small_temple
+    # Sub-venue kompleks TMII dilebur ke venue induk (lihat config.TMII_BBOX):
+    # anjungan/museum/wahana di dalam TMII = satu tiket, satu kunjungan —
+    # bukan destinasi mandiri di itinerary. Venue induk TMII dipertahankan.
+    la_min, la_max, lo_min, lo_max = config.TMII_BBOX
+    mask_tmii_sub = (
+        df["latitude"].between(la_min, la_max)
+        & df["longitude"].between(lo_min, lo_max)
+        & (name_lower.str.strip() != config.TMII_PARENT_NAME)
+    )
+    tmii_sub_names = df.loc[
+        mask_tmii_sub & ~mask_blacklist & ~mask_outside & ~mask_closed
+        & ~mask_small_temple, "name"].tolist()
+
+    mask_drop = (mask_blacklist | mask_outside | mask_closed
+                 | mask_small_temple | mask_tmii_sub)
     df_clean = df[~mask_drop].copy().reset_index(drop=True)
 
     # Fix koordinat yang salah (terdeteksi via audit reverse geocode)
@@ -106,6 +135,23 @@ def main():
         if len(idx) > 0:
             df_clean.loc[idx, "latitude"] = new_lat
             df_clean.loc[idx, "longitude"] = new_lon
+
+    # Deskripsi salah tempel (audit duplikat deskripsi 2026-07-04): venue valid
+    # tapi kebagian deskripsi venue LAIN dari fuzzy match enrichment (Google
+    # editorial / Wikipedia). Dikosongkan supaya tidak mengkontaminasi TF-IDF —
+    # CBF fallback ke venue_category untuk venue ini.
+    DESC_CLEAR = {
+        "tugu manggis",              # dapet deskripsi Cemara 6 Galeri
+        "tugu kunstkring paleis",    # dapet deskripsi Museum Bahari
+        "voc galangan",              # dapet deskripsi Museum Bahari
+        "moja museum",               # dapet deskripsi Museum Nasional
+        "bentara budaya jakarta",    # dapet deskripsi Museum Sasmitaloka A. Yani
+        "museum basoeki abdullah",   # dapet deskripsi Ciputra Artpreneur
+    }
+    if "description" in df_clean.columns:
+        idx = df_clean["name"].str.lower().str.strip().isin(DESC_CLEAR)
+        df_clean.loc[idx, "description"] = ""
+        print(f"Deskripsi salah-tempel dikosongkan: {idx.sum()} venue")
 
     n_after = len(df_clean)
 
@@ -126,6 +172,10 @@ def main():
     print(f"Dibuang (temple/vihara kecil checkin<5): {mask_small_temple.sum()}")
     if small_temple_names:
         for name in small_temple_names:
+            print(f"    - {name}")
+    print(f"Dibuang (sub-venue kompleks TMII, dilebur ke induk): {mask_tmii_sub.sum()}")
+    if tmii_sub_names:
+        for name in tmii_sub_names:
             print(f"    - {name}")
     print(f"Venue setelah cleaning: {n_after}")
 

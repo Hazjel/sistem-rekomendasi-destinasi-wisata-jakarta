@@ -431,12 +431,12 @@ FITNESS_W_REVISIT_DAY = 1.0     # penalti per zona yang dikunjungi LAGI di hari 
 CBF_MMR_LAMBDA = 0.7
 FITNESS_PENALTY_HOURS = 5.0     # penalti besar per pelanggaran jam buka (soft, smooth utk PSO)
 
-# --- Parameter GA (grid search ulang 2026-07-04 setelah fitness v3:
-#     v2 + MMR kandidat + penalti zone revisit lintas-hari) ---
+# --- Parameter GA (grid search FINAL 2026-07-04, dataset 163 venue dedup +
+#     fitness v3: MMR kandidat + penalti zone revisit intra & lintas-hari) ---
 GA_POP_SIZE = 50
 GA_N_GEN = 200
-GA_CROSSOVER_RATE = 0.9         # tuned fitness v3 (v2: 0.8, v1: 0.7)
-GA_MUTATION_RATE = 0.3          # tuned (base 0.2) — mutasi tinggi bantu eksplorasi permutasi
+GA_CROSSOVER_RATE = 0.7         # tuned dataset-163
+GA_MUTATION_RATE = 0.2          # tuned dataset-163
 GA_TOURNAMENT_K = 3
 GA_ELITE = 2
 
@@ -445,13 +445,11 @@ PSO_N_PARTICLES = 50
 PSO_N_ITER = 200
 PSO_W = 0.4                     # tuned (base 0.7) — inertia rendah: swap lama cepat dibuang,
                                 # gerakan halus di permutasi panjang
-PSO_C1 = 1.0                    # tuned (base 1.5)
-PSO_C2 = 1.0                    # tuned (base 1.5)
+PSO_C1 = 1.0                    # tuned dataset-163 (base 1.5)
+PSO_C2 = 1.0                    # tuned dataset-163 (base 1.5)
 
-# --- Parameter GA-PSO Hybrid (grid search ulang setelah fitness v2) ---
-HYBRID_GA_REFRESH_EVERY = 10    # tuned fitness v2 (fitness v1: 5) — dgn hard
-                                # constraint jam tutup, refresh terlalu sering
-                                # justru mengganggu konvergensi PSO
+# --- Parameter GA-PSO Hybrid (grid search final dataset-163) ---
+HYBRID_GA_REFRESH_EVERY = 5     # tuned dataset-163 (base 10)
 
 # --- Eksperimen ---
 EXPERIMENT_N_RUNS = 10          # repetisi per algoritma (seed beda)
@@ -477,3 +475,17 @@ CATEGORY_PRICE_LEVEL = {
 }
 # Input turis: "hemat" (<=1), "menengah" (<=2), "bebas" (<=3)
 BUDGET_LEVELS = {"hemat": 1, "menengah": 2, "bebas": 3}
+
+# --- Kompleks TMII: sub-venue dilebur ke induk (keputusan 2026-07-04) ---
+# 40 sub-venue di dalam TMII (anjungan, museum kecil, wahana) dihapus dari
+# dataset — satu tiket masuk TMII, semuanya bagian pengalaman satu kunjungan;
+# itinerary cukup menjadwalkan "TMII" sebagai satu destinasi. (Beda dgn Ancol:
+# Dufan/SeaWorld dkk tiket terpisah + durasi panjang = destinasi mandiri, KEEP.)
+# Geofence bbox + pengecualian venue induk. Diproses di clean_merged.py.
+# bbox diperlebar 2026-07-04: tangkap Museum Purna Bhakti Pertiwi + galerinya
+# (sisi barat, 106.886) & Museum Listrik (sisi timur, 106.9043) yang sempat
+# lolos. Batas barat 106.8855 sengaja EKSKLUSI Masjid At-Tin (106.8841, di
+# luar gerbang TMII, ikonik, destinasi mandiri). Batas utara -6.2960 eksklusi
+# kompleks Lubang Buaya (Monumen Pancasila Sakti dkk, bukan bagian TMII).
+TMII_BBOX = (-6.3120, -6.2960, 106.8855, 106.9060)  # (lat_min, lat_max, lon_min, lon_max)
+TMII_PARENT_NAME = "taman mini indonesia indah (tmii)"

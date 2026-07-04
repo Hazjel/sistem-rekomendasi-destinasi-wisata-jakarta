@@ -2,7 +2,7 @@
 
 Semua fase dijalankan dari **notebook** di `notebooks/`, urut per nomor.
 Tiap sel `[RUN]` **cache-aware** (skip kalau output ada). Dataset final:
-**219 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
+**163 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
 kategori) — di-import semua notebook.
 
 ---
@@ -39,7 +39,7 @@ Script enrichment API tetap `.py`: one-time, butuh API key + cache.
 | 6 | `merge_google_venues.py` | `venues_google_raw.csv` + `manual_venues.csv` | tambah venue Google + manual (idempoten) |
 | 7 | `patch_hours_websearch.py` | `merged_venues_enriched.csv` | patch jam 11 venue sumber resmi |
 | 8 | `fix_audit_issues.py` | `merged_venues_enriched.csv` | hapus noise, fix koordinat |
-| 9 | `clean_merged.py` | `merged_venues_enriched.csv` | blacklist + polygon DKI + businessStatus |
+| 9 | `clean_merged.py` | `merged_venues_enriched.csv` | blacklist + polygon DKI + businessStatus + lebur sub-venue TMII ke induk (geofence `TMII_BBOX`) |
 | 10 | `enrich_address_google.py` | `merged_venues_enriched.csv` | backfill address |
 | 11 | `enrich_description_wikipedia.py` | `merged_venues_enriched.csv` | backfill description (TF-IDF) |
 | 12 | `add_time_spent.py` | `merged_venues_enriched.csv` | kolom `time_spent_minutes` |
@@ -48,7 +48,7 @@ Script enrichment API tetap `.py`: one-time, butuh API key + cache.
 `dki_boundary.py` = helper polygon DKI (diimport step 9 & 6, bukan step).
 `archive/` = script satu-kali, bukan pipeline aktif.
 
-**Result**: `merged_venues_enriched.csv` — **219 venue** OPERATIONAL DKI, lengkap
+**Result**: `merged_venues_enriched.csv` — **163 venue** OPERATIONAL DKI, lengkap
 jam per hari, google_rating, description, address, time_spent_minutes.
 
 ---
@@ -67,8 +67,8 @@ Kode OSRM **inline**. Butuh internet.
 
 | Output | Isi |
 |--------|-----|
-| `jakarta_travel_time_inzone.csv` | 3.912 pasangan in-zone (zone sama) |
-| `jakarta_travel_time_allpairs.csv` | 23.871 pasangan all-pairs (nC2) |
+| `jakarta_travel_time_inzone.csv` | 2.301 pasangan in-zone (zone sama) |
+| `jakarta_travel_time_allpairs.csv` | 13.203 pasangan all-pairs (nC2) |
 
 100% OSRM, 0 fallback. In-zone = fitness penalty; all-pairs = lookup cross-zone.
 
@@ -139,6 +139,7 @@ data/processed/
   jakarta_hotels.csv                   ← NB 02 step 13
 ```
 
-> **Catatan**: `data/` di-gitignore — di-generate ulang via notebook, tidak
-> di-commit. Dataset final = 6 file yang dipakai fase modeling
+> **Catatan**: `data/` di-track via **Git LFS** (lihat `.gitattributes`) —
+> dataset final + cache API di-share supaya rekan tim bisa langsung run tanpa
+> rebuild/API key. Dataset final = 6 file yang dipakai fase modeling
 > (venues, clustered, inzone, allpairs, hotels, merged_venues_enriched).
