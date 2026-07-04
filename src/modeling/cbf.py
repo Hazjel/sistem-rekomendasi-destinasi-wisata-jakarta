@@ -74,14 +74,43 @@ class ContentBasedFilter:
         return out.sort_values("satisfaction", ascending=False)[cols]
 
     def candidates(self, n_days, preference_text=None, budget=None,
-                   per_day=config.CANDIDATES_PER_DAY):
-        """Top-N kandidat utk optimizer (N = per_day x n_days).
+                   per_day=config.CANDIDATES_PER_DAY,
+                   mmr_lambda=config.CBF_MMR_LAMBDA):
+        """Top-N kandidat utk optimizer (N = per_day x n_days), seleksi MMR.
+
+        MMR (Maximal Marginal Relevance): kandidat dipilih iteratif —
+        skor = lambda*satisfaction - (1-lambda)*max_cosine_sim ke kandidat
+        yang sudah terpilih. Mencegah kandidat didominasi venue kembar
+        (mis. 21 Anjungan TMII yang deskripsinya hampir identik).
+        mmr_lambda=1.0 -> murni relevansi (tanpa diversity).
 
         Returns (list venue_id, dict venue_id -> satisfaction).
         """
-        scored = self.score(preference_text, budget).head(per_day * n_days)
-        ids = scored["venue_id"].tolist()
-        sat = dict(zip(scored["venue_id"], scored["satisfaction"]))
+        n = per_day * n_days
+        scored = self.score(preference_text, budget)
+        if mmr_lambda >= 1.0 or len(scored) <= n:
+            scored = scored.head(n)
+            ids = scored["venue_id"].tolist()
+            sat = dict(zip(scored["venue_id"], scored["satisfaction"]))
+            return ids, sat
+
+        # pool = 3N teratas (MMR di seluruh dataset mahal & tak perlu)
+        pool = scored.head(3 * n)
+        pos = {vid: i for i, vid in enumerate(self.df["venue_id"])}
+        rows = [pos[v] for v in pool["venue_id"]]
+        sim_mat = cosine_similarity(self._mat[rows])       # antar kandidat pool
+        rel = pool["satisfaction"].to_numpy()
+
+        selected = [0]                                     # mulai dari top-1
+        remaining = list(range(1, len(pool)))
+        while len(selected) < n and remaining:
+            max_sim = sim_mat[np.ix_(remaining, selected)].max(axis=1)
+            mmr = mmr_lambda * rel[remaining] - (1 - mmr_lambda) * max_sim
+            selected.append(remaining.pop(int(np.argmax(mmr))))
+
+        chosen = pool.iloc[selected]
+        ids = chosen["venue_id"].tolist()
+        sat = dict(zip(chosen["venue_id"], chosen["satisfaction"]))
         return ids, sat
 
 

@@ -162,13 +162,15 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 **CBF (TF-IDF) + GA vs PSO vs GA-PSO Hybrid untuk TTDP multi-hari**
 
 - FASE 1 — CBF: TF-IDF `venue_category+description` + Bayesian weighted rating
-  + filter budget (proxy kategori) → kandidat top-N + skor satisfaction
+  + filter budget (proxy kategori) + **seleksi MMR** (diversity — cegah kandidat
+  didominasi venue kembar spt 21 Anjungan TMII) → kandidat top-N + satisfaction
 - FASE 2 — Optimasi: permutasi kandidat + time-budget decoding (mulai/selesai
   di hotel, cek jam buka per hari, **istirahat makan siang 60 mnt otomatis**
   window 11:30–13:30). Constraint jam tutup **hard** — venue yang bakal
   melanggar ditunda ke hari lain, itinerary output selalu valid.
   Fitness = Σsatisfaction − w·travel − w·cross_zone − w·zone_revisit
-  (penalti bolak-balik ke zona yang sudah ditinggal) − penalti jam
+  (penalti bolak-balik ke zona yang sudah ditinggal, intra-hari)
+  − w·zone_revisit_day (zona kebelah lintas hari) − penalti jam
 - 3 algoritma manual numpy: GA (OX + tournament + elitism), PSO diskrit
   (swap-sequence), GA-PSO Hybrid (PSO + refresh genetik) — semuanya di-polish
   **2-opt local search** di akhir (hapus pola rute bolak-balik lokal)

@@ -145,13 +145,17 @@ class TTDPProblem:
           cross_zone  : jumlah perpindahan antar venue beda zona
           zone_revisit: jumlah 'balik lagi' ke zona yang sudah ditinggal
                         di hari yang sama (pola bolak-balik)
+          zone_revisit_day: jumlah zona hari sebelumnya yang didatangi lagi
+                        di hari berbeda (dorong konsolidasi per zona)
           violations  : jumlah pelanggaran jam buka (soft — venue tetap
                         'dikunjungi' tapi kena penalti besar di fitness)
         """
         order = [self.candidates[i] for i in perm]
         days, visited = [], set()
         travel_total, cross_zone, violations = 0.0, 0, 0
-        zone_revisit = 0   # pola bolak-balik: kembali ke zona yg sudah ditinggal (per hari)
+        zone_revisit = 0       # bolak-balik intra-hari: balik ke zona yg sudah ditinggal
+        zone_revisit_day = 0   # lintas-hari: zona hari sebelumnya didatangi lagi
+        zones_prev_days = set()
 
         queue = list(order)
         for di in range(self.n_days):
@@ -216,6 +220,8 @@ class TTDPProblem:
                 if z != cur_zone:
                     if z in zones_seen:
                         zone_revisit += 1
+                    elif z in zones_prev_days:
+                        zone_revisit_day += 1   # zona hari lalu didatangi lagi
                     zones_seen.add(z)
                     cur_zone = z
                 visited.add(vid)
@@ -232,13 +238,14 @@ class TTDPProblem:
                     "is_break": False,
                 })
             days.append(visits)
+            zones_prev_days |= zones_seen
             queue = leftover
             if not queue:
                 break
 
         return {"days": days, "visited": visited, "travel_total": travel_total,
                 "cross_zone": cross_zone, "zone_revisit": zone_revisit,
-                "violations": violations}
+                "zone_revisit_day": zone_revisit_day, "violations": violations}
 
     # ------------------------------------------------------------------
     def fitness(self, perm):
@@ -249,6 +256,7 @@ class TTDPProblem:
                 - config.FITNESS_W_TIME * (d["travel_total"] / 60.0)
                 - config.FITNESS_W_ZONE * d["cross_zone"]
                 - config.FITNESS_W_REVISIT * d["zone_revisit"]
+                - config.FITNESS_W_REVISIT_DAY * d["zone_revisit_day"]
                 - config.FITNESS_PENALTY_HOURS * d["violations"])
 
     # ------------------------------------------------------------------

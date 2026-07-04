@@ -418,13 +418,24 @@ FITNESS_W_ZONE = 1.0            # penalti per perpindahan lintas zona (soft; nai
 FITNESS_W_REVISIT = 3.0         # penalti per KEMBALI ke zona yang sudah ditinggal di hari
                                 # sama (pola bolak-balik; jauh lebih berat dari sekadar
                                 # pindah zona sekali)
+FITNESS_W_REVISIT_DAY = 1.0     # penalti per zona yang dikunjungi LAGI di hari BERBEDA
+                                # (lebih ringan — kadang tak terhindarkan kalau venue
+                                # satu zona tak muat 1 hari, tapi didorong konsolidasi)
+
+# --- Diversity kandidat CBF (MMR — Maximal Marginal Relevance) ---
+# Tanpa ini kandidat bisa didominasi venue kembar (21 Anjungan TMII deskripsinya
+# hampir identik, semua match query "museum sejarah budaya") -> itinerary jenuh
+# satu kompleks & zona terpaksa dibelah lintas hari.
+# MMR: pilih kandidat iteratif, skor = LAMBDA*satisfaction - (1-LAMBDA)*max_sim
+# ke kandidat yang sudah terpilih. LAMBDA=1 -> murni relevansi (perilaku lama).
+CBF_MMR_LAMBDA = 0.7
 FITNESS_PENALTY_HOURS = 5.0     # penalti besar per pelanggaran jam buka (soft, smooth utk PSO)
 
-# --- Parameter GA (grid search ulang 2026-07-04 setelah fitness v2:
-#     lunch break + hard closing + penalti zone-revisit) ---
+# --- Parameter GA (grid search ulang 2026-07-04 setelah fitness v3:
+#     v2 + MMR kandidat + penalti zone revisit lintas-hari) ---
 GA_POP_SIZE = 50
 GA_N_GEN = 200
-GA_CROSSOVER_RATE = 0.8         # tuned fitness v2 (fitness v1: 0.7)
+GA_CROSSOVER_RATE = 0.9         # tuned fitness v3 (v2: 0.8, v1: 0.7)
 GA_MUTATION_RATE = 0.3          # tuned (base 0.2) — mutasi tinggi bantu eksplorasi permutasi
 GA_TOURNAMENT_K = 3
 GA_ELITE = 2
