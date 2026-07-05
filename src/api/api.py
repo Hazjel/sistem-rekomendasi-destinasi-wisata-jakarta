@@ -62,6 +62,14 @@ def venues():
     return svc.list_venues()
 
 
+@app.get("/venues/{venue_id}")
+def venue_detail(venue_id: str):
+    d = svc.venue_detail(venue_id)
+    if d is None:
+        raise HTTPException(404, f"venue_id tidak dikenal: {venue_id}")
+    return d
+
+
 @app.get("/hotels")
 def hotels():
     return svc.list_hotels()

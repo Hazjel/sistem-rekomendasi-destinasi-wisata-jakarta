@@ -35,14 +35,50 @@ venues = pd.read_csv(config.CLUSTERED_VENUES_CSV)
 
 
 def list_venues():
-    """Semua venue utk mode pilih-manual + peta (ringan, kolom seperlunya)."""
+    """Semua venue utk grid Home + mode pilih-manual + peta."""
     out = venues.copy()
     out["price_level"] = out["venue_category"].map(
         lambda c: config.CATEGORY_PRICE_LEVEL.get(
             c, config.CATEGORY_PRICE_LEVEL["DEFAULT"]))
+    out["description_short"] = (out["description"].fillna("")
+                                .str.slice(0, 160))
     cols = ["venue_id", "name", "venue_category", "zone_id",
-            "google_rating", "price_level", "latitude", "longitude"]
+            "google_rating", "price_level", "latitude", "longitude",
+            "time_spent_minutes", "description_short"]
     return out[cols].fillna({"google_rating": 0}).to_dict(orient="records")
+
+
+_DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+
+
+def venue_detail(venue_id):
+    """Detail lengkap satu venue utk halaman destinasi. None kalau tak ada."""
+    row = venues[venues["venue_id"].astype(str) == str(venue_id)]
+    if row.empty:
+        return None
+    r = row.iloc[0]
+    hours = []
+    for d in _DAYS_ID:
+        buka, tutup = r.get(f"{d}_buka"), r.get(f"{d}_tutup")
+        hours.append({"day": d,
+                      "open": None if pd.isna(buka) else str(buka),
+                      "close": None if pd.isna(tutup) else str(tutup)})
+    return {
+        "venue_id": r["venue_id"],
+        "name": r["name"],
+        "venue_category": r["venue_category"],
+        "zone_id": int(r["zone_id"]),
+        "google_rating": None if pd.isna(r["google_rating"]) else float(r["google_rating"]),
+        "google_rating_count": None if pd.isna(r.get("google_rating_count")) else int(r["google_rating_count"]),
+        "price_level": config.CATEGORY_PRICE_LEVEL.get(
+            r["venue_category"], config.CATEGORY_PRICE_LEVEL["DEFAULT"]),
+        "latitude": float(r["latitude"]),
+        "longitude": float(r["longitude"]),
+        "time_spent_minutes": None if pd.isna(r.get("time_spent_minutes")) else int(r["time_spent_minutes"]),
+        "description": None if pd.isna(r.get("description")) else str(r["description"]),
+        "address": None if pd.isna(r.get("address")) else str(r["address"]),
+        "hours": hours,
+    }
 
 
 def list_hotels():
