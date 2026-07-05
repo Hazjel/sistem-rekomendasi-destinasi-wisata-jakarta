@@ -82,6 +82,14 @@ def venue_detail(venue_id: str):
     return d
 
 
+@app.get("/venues/{venue_id}/similar")
+def venue_similar(venue_id: str, k: int = 4):
+    out = svc.similar_venues(venue_id, k=min(max(k, 1), 12))
+    if out is None:
+        raise HTTPException(404, f"venue_id tidak dikenal: {venue_id}")
+    return out
+
+
 @app.get("/venues/{venue_id}/photo")
 def venue_photo(venue_id: str, w: int = 800):
     """Proxy foto Google Places — key dipakai server-side (tidak bocor ke

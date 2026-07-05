@@ -51,6 +51,25 @@ def list_venues():
         {"google_rating": 0, "google_rating_count": 0}).to_dict(orient="records")
 
 
+def similar_venues(venue_id, k=4):
+    """Top-k venue paling mirip (cosine TF-IDF dari CBF). None kalau id salah.
+
+    Reuse matriks TF-IDF cbf._mat — di UI ditampilkan sebagai
+    "Kamu mungkin juga suka" tanpa istilah teknis."""
+    from sklearn.metrics.pairwise import cosine_similarity
+
+    ids = cbf.df["venue_id"].astype(str).tolist()
+    if str(venue_id) not in ids:
+        return None
+    row = ids.index(str(venue_id))
+    sims = cosine_similarity(cbf._mat[row], cbf._mat).ravel()
+    order = sims.argsort()[::-1]
+    picked = [i for i in order if i != row][:k]
+
+    detail = {str(v["venue_id"]): v for v in list_venues()}
+    return [detail[ids[i]] for i in picked if ids[i] in detail]
+
+
 def photo_ref_of(venue_id):
     """Google Places photo resource name utk venue. None kalau tak ada."""
     row = venues[venues["venue_id"].astype(str) == str(venue_id)]
