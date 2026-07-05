@@ -42,10 +42,20 @@ def list_venues():
             c, config.CATEGORY_PRICE_LEVEL["DEFAULT"]))
     out["description_short"] = (out["description"].fillna("")
                                 .str.slice(0, 160))
+    out["has_photo"] = out["photo_ref"].notna()
     cols = ["venue_id", "name", "venue_category", "zone_id",
             "google_rating", "price_level", "latitude", "longitude",
-            "time_spent_minutes", "description_short"]
+            "time_spent_minutes", "description_short", "has_photo"]
     return out[cols].fillna({"google_rating": 0}).to_dict(orient="records")
+
+
+def photo_ref_of(venue_id):
+    """Google Places photo resource name utk venue. None kalau tak ada."""
+    row = venues[venues["venue_id"].astype(str) == str(venue_id)]
+    if row.empty:
+        return None
+    ref = row.iloc[0].get("photo_ref")
+    return None if pd.isna(ref) else str(ref)
 
 
 _DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
@@ -77,6 +87,7 @@ def venue_detail(venue_id):
         "time_spent_minutes": None if pd.isna(r.get("time_spent_minutes")) else int(r["time_spent_minutes"]),
         "description": None if pd.isna(r.get("description")) else str(r["description"]),
         "address": None if pd.isna(r.get("address")) else str(r["address"]),
+        "has_photo": not pd.isna(r.get("photo_ref")),
         "hours": hours,
     }
 
