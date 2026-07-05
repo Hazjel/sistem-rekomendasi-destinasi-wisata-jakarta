@@ -44,9 +44,11 @@ def list_venues():
                                 .str.slice(0, 160))
     out["has_photo"] = out["photo_ref"].notna()
     cols = ["venue_id", "name", "venue_category", "zone_id",
-            "google_rating", "price_level", "latitude", "longitude",
+            "google_rating", "google_rating_count", "price_level",
+            "latitude", "longitude",
             "time_spent_minutes", "description_short", "has_photo"]
-    return out[cols].fillna({"google_rating": 0}).to_dict(orient="records")
+    return out[cols].fillna(
+        {"google_rating": 0, "google_rating_count": 0}).to_dict(orient="records")
 
 
 def photo_ref_of(venue_id):
