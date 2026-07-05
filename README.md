@@ -28,10 +28,10 @@ Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasi
 
 | File | Isi | Keterangan |
 |------|-----|-----------|
-| `data/processed/jakarta_tourism_venues.csv` | **162 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
-| `data/processed/jakarta_tourism_venues_clustered.csv` | 162 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
-| `data/processed/jakarta_travel_time_inzone.csv` | **2.289 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
-| `data/processed/jakarta_travel_time_allpairs.csv` | **13.041 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
+| `data/processed/jakarta_tourism_venues.csv` | **161 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
+| `data/processed/jakarta_tourism_venues_clustered.csv` | 161 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
+| `data/processed/jakarta_travel_time_inzone.csv` | **2.231 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
+| `data/processed/jakarta_travel_time_allpairs.csv` | **12.880 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
 | `data/processed/jakarta_hotels.csv` | **181 hotel** bersih (daratan Jakarta) | Titik berangkat/pulang itinerary |
 
 ### Kolom Kunci Dataset Venue
@@ -62,7 +62,7 @@ notebooks/
   01_data_collection.ipynb   → data/raw/*  + hotels_google.csv
       Kode collection inline (OSM Overpass, STEPS HuggingFace, Google Places).
 
-  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (162 venue)
+  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (161 venue)
       13 step. Sel [RUN] memanggil script src/preprocessing/*.py via run_step()
       (output streaming real-time ke notebook). Script enrichment API tetap .py.
 
@@ -70,8 +70,8 @@ notebooks/
                                jakarta_tourism_venues.csv (tanpa zone_id)
       Kode clustering inline.
 
-  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (2.289 pasangan)
-                               jakarta_travel_time_allpairs.csv (13.041 pasangan)
+  04_time_matrix.ipynb       → jakarta_travel_time_inzone.csv (2.231 pasangan)
+                               jakarta_travel_time_allpairs.csv (12.880 pasangan)
       Kode OSRM inline. Butuh koneksi internet.
 
   05_modeling.ipynb          → FASE 1 MODELING: Content-Based Filtering
@@ -142,6 +142,7 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 | **Mall tidak masuk** | Scope riset = destinasi wisata (atraksi/budaya/alam). Mall = belanja, bukan destinasi. |
 | **Sub-venue TMII dilebur ke induk** | 43 sub-venue (anjungan, museum kecil, wahana) dalam TMII = satu tiket satu kunjungan — itinerary cukup menjadwalkan "TMII". Ancol TIDAK dilebur: Dufan/SeaWorld dkk bertiket terpisah + durasi panjang = destinasi mandiri. Geofence `config.TMII_BBOX` di `clean_merged.py`. |
 | **Dedupe audit deskripsi** | 12 entri duplikat/sub-venue dibuang (mis. "Dufan Ancol" dup DUFAN, "Klenteng Petak Sembilan" = nama lain Wihara Dharma Bhakti, kompleks Lubang Buaya dilebur ke Monumen Pancasila Sakti) + 6 deskripsi salah-tempel dikosongkan (anti kontaminasi TF-IDF). Daftar di `clean_merged.py`. |
+| **Audit venue non-destinasi** | Venue dgn sinyal "bukan destinasi wisata" dibuang (mis. "Tugu Utama" Kelapa Gading: 1 ulasan Google, tanpa foto, tanpa deskripsi — monumen penanda boulevard, bukan tempat wisata). Sisa dataset 161/161 punya foto Google. |
 | **K-Means k=8** (Euclidean lat/lon) | Cluster geografis untuk inisialisasi populasi GA/PSO dan soft constraint cross-zone. |
 | **OSRM tanpa traffic** | Tidak ada realtime traffic di OSRM public demo — limitasi dideklarasi di laporan. |
 | **time_spent via log10** | Formula Lim 2019: `log10(rating_count)` × faktor kategori. Proxy, bukan empiris. |

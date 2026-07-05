@@ -2,7 +2,7 @@
 
 Semua fase dijalankan dari **notebook** di `notebooks/`, urut per nomor.
 Tiap sel `[RUN]` **cache-aware** (skip kalau output ada). Dataset final:
-**162 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
+**161 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
 kategori) — di-import semua notebook.
 
 ---
@@ -48,7 +48,7 @@ Script enrichment API tetap `.py`: one-time, butuh API key + cache.
 `dki_boundary.py` = helper polygon DKI (diimport step 9 & 6, bukan step).
 `archive/` = script satu-kali, bukan pipeline aktif.
 
-**Result**: `merged_venues_enriched.csv` — **162 venue** OPERATIONAL DKI, lengkap
+**Result**: `merged_venues_enriched.csv` — **161 venue** OPERATIONAL DKI, lengkap
 jam per hari, google_rating, description, address, time_spent_minutes.
 
 ---
@@ -67,8 +67,8 @@ Kode OSRM **inline**. Butuh internet.
 
 | Output | Isi |
 |--------|-----|
-| `jakarta_travel_time_inzone.csv` | 2.289 pasangan in-zone (zone sama) |
-| `jakarta_travel_time_allpairs.csv` | 13.041 pasangan all-pairs (nC2) |
+| `jakarta_travel_time_inzone.csv` | 2.231 pasangan in-zone (zone sama) |
+| `jakarta_travel_time_allpairs.csv` | 12.880 pasangan all-pairs (nC2) |
 
 100% OSRM, 0 fallback. In-zone = fitness penalty; all-pairs = lookup cross-zone.
 

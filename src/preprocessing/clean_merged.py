@@ -44,6 +44,9 @@ def main():
         "masjid jami' at-taqwa", # masjid lingkungan biasa (checkin 11 > proteksi, force)
         "istiqlal mosque fountain",  # air mancur = sub-fitur Masjid Istiqlal, bukan destinasi
         "taman nias",            # taman lingkungan RT/RW Kelapa Gading, bukan destinasi
+        "tugu utama",            # monumen penanda boulevard Kelapa Gading, bukan
+                                 # destinasi wisata (1 ulasan Google, tanpa foto/
+                                 # deskripsi; tak dikenal sbg landmark wisata)
         # --- duplikat: tempat sama terdaftar 2x (audit deskripsi 2026-07-04) ---
         "satriamandala museum",  # dup Museum Satriamandala (6627, keep versi STEPS)
         "dufan ancol",           # dup Dunia Fantasi (DUFAN) (458)
