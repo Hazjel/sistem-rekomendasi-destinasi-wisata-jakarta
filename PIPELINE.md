@@ -68,9 +68,13 @@ Kode OSRM **inline**. Butuh internet.
 | Output | Isi |
 |--------|-----|
 | `jakarta_travel_time_inzone.csv` | 2.231 pasangan in-zone (zone sama) |
-| `jakarta_travel_time_allpairs.csv` | 12.880 pasangan all-pairs (nC2) |
+| `jakarta_travel_time_allpairs.csv` | 12.880 pasangan all-pairs (nC2), profil driving/mobil |
+| `jakarta_travel_time_motor.csv` | 12.880 pasangan MOTOR non-tol (jarak OSRM bike ÷ 30 km/jam) |
 
-100% OSRM, 0 fallback. In-zone = fitness penalty; all-pairs = lookup cross-zone.
+Driving 100% OSRM. Matriks motor dibuat `src/preprocessing/build_motor_matrix.py`
+(profil `routed-bike` menghindari tol/motorway; motor dilarang tol) — jarak bike
+dibagi kecepatan motor (`config.MOTOR_SPEED_KMH=30`). Moda mobil/umum pakai
+matriks driving × faktor; moda motor pakai matriks non-tol ini.
 
 ---
 

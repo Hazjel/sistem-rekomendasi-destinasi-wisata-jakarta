@@ -402,6 +402,14 @@ VEHICLE_LABEL = {
     "motor": "Motor / ojek online",
     "umum": "Transportasi umum",
 }
+# Motor: rute NON-TOL (motor dilarang tol). Waktu tempuh = jarak rute bebas-tol
+# (OSRM profil 'bike' di routing.openstreetmap.de menghindari motorway/tol)
+# dibagi kecepatan motor. Jauh lebih realistis dari faktor 0.8 (yang ikut rute
+# mobil via tol). Matriks motor dibangun terpisah oleh build_motor_matrix.py;
+# bila file tak ada, sistem fallback ke VEHICLE_SPEED_FACTOR["motor"].
+MOTOR_SPEED_KMH = 30           # estimasi motor lalu lintas Jakarta (asumsi laporan)
+OSRM_BIKE_URL = "https://routing.openstreetmap.de/routed-bike"
+TIME_MATRIX_MOTOR_CSV = "data/processed/jakarta_travel_time_motor.csv"
 # Jam mulai hari per moda (menit sejak 00:00). Transportasi umum Jakarta
 # (MRT/TransJakarta/KRL/LRT) beroperasi mulai ~05:00 -> semua moda boleh
 # berangkat pagi. Venue tetap tak bisa dimasuki sebelum jam bukanya.

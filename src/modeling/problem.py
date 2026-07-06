@@ -89,21 +89,36 @@ class TTDPProblem:
             self.hotel_lon = float(hotel["longitude"])
             self.hotel_name = hotel.get("name", "hotel")
 
-        # Lookup travel time antar venue dari all-pairs matrix (menit).
-        ap = pd.read_csv(config.TIME_MATRIX_ALLPAIRS_CSV)
+        # Lookup travel time antar venue (menit). Motor pakai matriks NON-TOL
+        # terpisah (jarak bike / kecepatan motor) bila tersedia -> waktu sudah
+        # final, faktor kecepatan dinolkan. Moda lain pakai matriks driving OSRM
+        # × faktor kecepatan (mobil 1.0 / umum 1.5).
+        motor_csv = getattr(config, "TIME_MATRIX_MOTOR_CSV", None)
+        if vehicle == "motor" and motor_csv and os.path.exists(motor_csv):
+            mtx = pd.read_csv(motor_csv)
+            self._veh = 1.0   # durasi motor sudah final di matriks non-tol
+            self._motor_matrix = True
+        else:
+            mtx = pd.read_csv(config.TIME_MATRIX_ALLPAIRS_CSV)
+            self._motor_matrix = False
         self._tt = {}
-        for a, b, d in zip(ap["venue_id_a"], ap["venue_id_b"], ap["duration_minutes"]):
+        for a, b, d in zip(mtx["venue_id_a"], mtx["venue_id_b"], mtx["duration_minutes"]):
             self._tt[(a, b)] = d
             self._tt[(b, a)] = d
 
         # Pre-compute per kandidat: koordinat, zone, time_spent, jam buka per hari,
-        # travel hotel<->venue (haversine/kecepatan rata2 — hotel tak ada di matrix).
+        # travel hotel<->venue (haversine — hotel tak ada di matrix manapun).
+        # Motor pakai kecepatan motor langsung; moda lain AVG_SPEED × faktor.
+        if self._motor_matrix:
+            hotel_speed = config.MOTOR_SPEED_KMH   # km/jam, veh sudah 1.0
+        else:
+            hotel_speed = config.AVG_SPEED_KMH_FALLBACK / self._veh  # efektif per moda
         self._info = {}
         for vid in self.candidates:
             r = self.venues.loc[vid]
             hotel_min = (_haversine_km(self.hotel_lat, self.hotel_lon,
                                        r["latitude"], r["longitude"])
-                         / config.AVG_SPEED_KMH_FALLBACK) * 60.0 * self._veh
+                         / hotel_speed) * 60.0
             hours = {}
             for d in DAYS_ID:
                 hours[d] = (_parse_hhmm(r.get(f"{d}_buka")),
@@ -132,10 +147,12 @@ class TTDPProblem:
         Fallback haversine kalau pasangan tak ada di matriks OSRM."""
         d = self._tt.get((a, b))
         if d is not None:
-            return d * self._veh
+            return d * self._veh   # motor: matriks final & _veh=1.0
         ra, rb = self.venues.loc[a], self.venues.loc[b]
         km = _haversine_km(ra["latitude"], ra["longitude"],
                            rb["latitude"], rb["longitude"])
+        if self._motor_matrix:     # motor: pasangan tak ada di matriks (jarang)
+            return (km * 1.3 / config.MOTOR_SPEED_KMH) * 60.0
         return (km / config.AVG_SPEED_KMH_FALLBACK) * 60.0 * self._veh
 
     # ------------------------------------------------------------------
