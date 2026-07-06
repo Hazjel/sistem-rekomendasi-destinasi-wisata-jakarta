@@ -68,7 +68,7 @@ class ItineraryRequest(BaseModel):
                             "eksperimen: hybrid utk 1-3 hari, ga utk 4-5) "
                             "/ ga / pso / hybrid")
     vehicle: str = Field(
-        "mobil", description="moda kendaraan: mobil / motor / umum "
+        "mobil", description="moda kendaraan: mobil / motor "
                             "(mempengaruhi estimasi waktu tempuh & jumlah "
                             "destinasi yang muat per hari)")
 

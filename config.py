@@ -392,15 +392,13 @@ AVG_SPEED_KMH_FALLBACK = 20  # estimasi kondisi macet Jakarta, kalau OSRM gagal
 # relatif thd waktu tempuh mobil (dideklarasikan sbg estimasi di laporan;
 # OSRM publik tak meng-host profil walking/cycling secara andal).
 VEHICLE_SPEED_FACTOR = {
-    "mobil": 1.0,   # baseline data OSRM
-    "motor": 0.8,   # lebih lincah menyalip macet Jakarta
-    "umum": 1.5,    # overhead transit/tunggu (TransJakarta/KRL/MRT)
+    "mobil": 1.0,   # baseline data OSRM (boleh tol)
+    "motor": 0.8,   # fallback bila matriks motor non-tol belum ada
 }
 VEHICLE_DEFAULT = "mobil"
 VEHICLE_LABEL = {
     "mobil": "Mobil / taksi online",
     "motor": "Motor / ojek online",
-    "umum": "Transportasi umum",
 }
 # Motor: rute NON-TOL (motor dilarang tol). Waktu tempuh = jarak rute bebas-tol
 # (OSRM profil 'bike' di routing.openstreetmap.de menghindari motorway/tol)
@@ -410,11 +408,10 @@ VEHICLE_LABEL = {
 MOTOR_SPEED_KMH = 30           # estimasi motor lalu lintas Jakarta (asumsi laporan)
 OSRM_BIKE_URL = "https://routing.openstreetmap.de/routed-bike"
 TIME_MATRIX_MOTOR_CSV = "data/processed/jakarta_travel_time_motor.csv"
-# Jam mulai hari per moda (menit sejak 00:00). Transportasi umum Jakarta
-# (MRT/TransJakarta/KRL/LRT) beroperasi mulai ~05:00 -> semua moda boleh
-# berangkat pagi. Venue tetap tak bisa dimasuki sebelum jam bukanya.
-VEHICLE_DAY_START = {"mobil": 5 * 60, "motor": 5 * 60, "umum": 5 * 60}
-# (Jalan kaki + batas radius = future work.)
+# Jam mulai hari per moda (menit sejak 00:00). Mobil/motor boleh berangkat
+# pagi (~05:00). Venue tetap tak bisa dimasuki sebelum jam bukanya.
+VEHICLE_DAY_START = {"mobil": 5 * 60, "motor": 5 * 60}
+# (Transportasi umum & jalan kaki = future work — butuh data GTFS / batas radius.)
 
 # Seed agar simulasi traffic reproducible.
 RANDOM_SEED = 42
