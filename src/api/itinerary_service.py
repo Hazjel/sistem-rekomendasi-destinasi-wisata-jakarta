@@ -125,7 +125,8 @@ def _hhmm(minutes):
 
 def build_itinerary(preference_text=None, budget="menengah", n_days=2,
                     start_day="Sabtu", hotel_id=None, venue_ids=None,
-                    algorithm="auto", seed=config.RANDOM_SEED):
+                    algorithm="auto", vehicle=config.VEHICLE_DEFAULT,
+                    seed=config.RANDOM_SEED):
     """Susun itinerary multi-hari. Returns dict siap di-JSON-kan.
 
     venue_ids None  -> mode OTOMATIS: kandidat dari CBF top-N (MMR)
@@ -143,6 +144,8 @@ def build_itinerary(preference_text=None, budget="menengah", n_days=2,
         algorithm = "hybrid" if n_days <= 3 else "ga"
     if algorithm not in _ALGOS:
         raise ValueError(f"algorithm harus 'auto' atau salah satu {list(_ALGOS)}")
+    if vehicle not in config.VEHICLE_SPEED_FACTOR:
+        raise ValueError(f"vehicle harus salah satu {list(config.VEHICLE_SPEED_FACTOR)}")
 
     # --- kandidat + satisfaction ---
     if venue_ids:
@@ -171,7 +174,7 @@ def build_itinerary(preference_text=None, budget="menengah", n_days=2,
 
     # --- optimasi ---
     prob = TTDPProblem(ids, hotel=hotel, n_days=n_days, start_day=start_day,
-                       satisfaction=sat)
+                       satisfaction=sat, vehicle=vehicle)
     res = _ALGOS[algorithm](prob, seed=seed)
     d = prob.decode(res["best_perm"])
 
@@ -214,7 +217,8 @@ def build_itinerary(preference_text=None, budget="menengah", n_days=2,
                   "latitude": prob.hotel_lat, "longitude": prob.hotel_lon},
         "params": {"preference_text": preference_text, "budget": budget,
                    "n_days": n_days, "start_day": start_day,
-                   "algorithm": algorithm,
+                   "algorithm": algorithm, "vehicle": vehicle,
+                   "vehicle_label": config.VEHICLE_LABEL.get(vehicle, vehicle),
                    "mode": "manual" if venue_ids else "otomatis"},
         "summary": {
             "fitness": round(float(res["best_fitness"]), 4),

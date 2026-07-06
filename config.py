@@ -387,6 +387,27 @@ TIME_MATRIX_CSV = "data/processed/jakarta_travel_time_inzone.csv"
 TIME_MATRIX_ALLPAIRS_CSV = "data/processed/jakarta_travel_time_allpairs.csv"
 AVG_SPEED_KMH_FALLBACK = 20  # estimasi kondisi macet Jakarta, kalau OSRM gagal
 
+# --- Pilihan moda kendaraan (personalisasi user) ---
+# Matriks OSRM = profil 'driving' (mobil). Moda lain diestimasi via faktor
+# relatif thd waktu tempuh mobil (dideklarasikan sbg estimasi di laporan;
+# OSRM publik tak meng-host profil walking/cycling secara andal).
+VEHICLE_SPEED_FACTOR = {
+    "mobil": 1.0,   # baseline data OSRM
+    "motor": 0.8,   # lebih lincah menyalip macet Jakarta
+    "umum": 1.5,    # overhead transit/tunggu (TransJakarta/KRL/MRT)
+}
+VEHICLE_DEFAULT = "mobil"
+VEHICLE_LABEL = {
+    "mobil": "Mobil / taksi online",
+    "motor": "Motor / ojek online",
+    "umum": "Transportasi umum",
+}
+# Jam mulai hari per moda (menit sejak 00:00). Transportasi umum Jakarta
+# (MRT/TransJakarta/KRL/LRT) beroperasi mulai ~05:00 -> semua moda boleh
+# berangkat pagi. Venue tetap tak bisa dimasuki sebelum jam bukanya.
+VEHICLE_DAY_START = {"mobil": 5 * 60, "motor": 5 * 60, "umum": 5 * 60}
+# (Jalan kaki + batas radius = future work.)
+
 # Seed agar simulasi traffic reproducible.
 RANDOM_SEED = 42
 

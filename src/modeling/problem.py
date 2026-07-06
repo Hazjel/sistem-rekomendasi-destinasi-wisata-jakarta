@@ -61,8 +61,8 @@ class TTDPProblem:
     """
 
     def __init__(self, candidate_ids, hotel=None, n_days=2, start_day="Sabtu",
-                 satisfaction=None,
-                 day_start=config.DAY_START_MIN, day_end=config.DAY_END_MIN):
+                 satisfaction=None, vehicle=config.VEHICLE_DEFAULT,
+                 day_start=None, day_end=config.DAY_END_MIN):
         self.venues = pd.read_csv(config.CLUSTERED_VENUES_CSV)
         self.venues = self.venues.set_index("venue_id", drop=False)
         missing = [v for v in candidate_ids if v not in self.venues.index]
@@ -71,7 +71,11 @@ class TTDPProblem:
         self.candidates = list(candidate_ids)
         self.n = len(self.candidates)
         self.n_days = n_days
-        self.day_start = day_start
+        # Moda kendaraan: faktor kecepatan thd baseline mobil + jam mulai per moda.
+        self.vehicle = vehicle
+        self._veh = config.VEHICLE_SPEED_FACTOR.get(vehicle, 1.0)
+        self.day_start = (day_start if day_start is not None
+                          else config.VEHICLE_DAY_START.get(vehicle, config.DAY_START_MIN))
         self.day_end = day_end
         self.day_names = [DAYS_ID[(DAYS_ID.index(start_day) + i) % 7]
                           for i in range(n_days)]
@@ -99,7 +103,7 @@ class TTDPProblem:
             r = self.venues.loc[vid]
             hotel_min = (_haversine_km(self.hotel_lat, self.hotel_lon,
                                        r["latitude"], r["longitude"])
-                         / config.AVG_SPEED_KMH_FALLBACK) * 60.0
+                         / config.AVG_SPEED_KMH_FALLBACK) * 60.0 * self._veh
             hours = {}
             for d in DAYS_ID:
                 hours[d] = (_parse_hhmm(r.get(f"{d}_buka")),
@@ -124,14 +128,15 @@ class TTDPProblem:
 
     # ------------------------------------------------------------------
     def travel_min(self, a, b):
-        """Waktu tempuh venue a -> b (menit). Fallback haversine kalau tak ada."""
+        """Waktu tempuh venue a -> b (menit), diskala faktor moda kendaraan.
+        Fallback haversine kalau pasangan tak ada di matriks OSRM."""
         d = self._tt.get((a, b))
         if d is not None:
-            return d
+            return d * self._veh
         ra, rb = self.venues.loc[a], self.venues.loc[b]
         km = _haversine_km(ra["latitude"], ra["longitude"],
                            rb["latitude"], rb["longitude"])
-        return (km / config.AVG_SPEED_KMH_FALLBACK) * 60.0
+        return (km / config.AVG_SPEED_KMH_FALLBACK) * 60.0 * self._veh
 
     # ------------------------------------------------------------------
     def decode(self, perm):
@@ -302,7 +307,9 @@ def _sanity():
     perm = prob.random_perm(rng)
     d = prob.decode(perm)
     fit = prob.fitness(perm)
-    print(f"Kandidat: {prob.n} | hari: {prob.n_days} ({prob.day_names})")
+    print(f"Kandidat: {prob.n} | hari: {prob.n_days} ({prob.day_names}) "
+          f"| moda: {prob.vehicle} (x{prob._veh}) | mulai: "
+          f"{prob.day_start//60:02d}:{prob.day_start%60:02d}")
     print(f"Terkunjungi: {len(d['visited'])} | travel: {d['travel_total']:.0f} mnt "
           f"| cross-zone: {d['cross_zone']} | pelanggaran jam: {d['violations']}")
     print(f"Fitness: {fit:.3f}")

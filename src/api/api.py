@@ -67,6 +67,10 @@ class ItineraryRequest(BaseModel):
         "auto", description="auto (default — pilih otomatis dari hasil "
                             "eksperimen: hybrid utk 1-3 hari, ga utk 4-5) "
                             "/ ga / pso / hybrid")
+    vehicle: str = Field(
+        "mobil", description="moda kendaraan: mobil / motor / umum "
+                            "(mempengaruhi estimasi waktu tempuh & jumlah "
+                            "destinasi yang muat per hari)")
 
 
 @app.get("/venues")
@@ -137,7 +141,7 @@ def itinerary(req: ItineraryRequest):
             preference_text=req.preference_text, budget=req.budget,
             n_days=req.n_days, start_day=req.start_day,
             hotel_id=req.hotel_id, venue_ids=req.venue_ids,
-            algorithm=req.algorithm)
+            algorithm=req.algorithm, vehicle=req.vehicle)
     except ValueError as e:
         raise HTTPException(422, str(e))
 
