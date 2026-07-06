@@ -93,7 +93,9 @@ src/modeling/     FASE MODELING (dipanggil NB 06):
                     problem.py  — TTDP: decoding time-budget + fitness
                     ga.py / pso.py / hybrid.py — 3 algoritma optimasi (manual numpy)
                     experiment.py — runner perbandingan → optimization_results.csv
-src/api/             recommend.py / api.py / make_map.py — prototipe API.
+src/api/             api.py + itinerary_service.py — REST API produksi
+                    (CBF + GA/PSO/Hybrid); make_map.py — utility peta cluster.
+                    archive/ — prototipe lama (recommend.py), tak dipakai.
 config.py           konstanta bersama (path, blacklist, kategori, param modeling).
 ```
 

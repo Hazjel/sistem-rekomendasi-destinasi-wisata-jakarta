@@ -109,8 +109,8 @@ Silhouette score clustering ada di NB 03.
 |--------|-----------|
 | `api.py` | REST API FastAPI: `GET /venues`, `GET /hotels`, `POST /itinerary` (+ CORS utk frontend :5173) |
 | `itinerary_service.py` | Glue CBF + TTDP + GA/PSO/Hybrid (reuse `src/modeling/*`, load data sekali saat startup) |
-| `make_map.py` | Peta cluster interaktif HTML (`cluster_map.html`) |
-| `recommend.py` | Prototipe lama (artifact, tidak dipakai API) |
+| `make_map.py` | Utility peta cluster interaktif HTML (`cluster_map.html`) |
+| `archive/recommend.py` | Prototipe lama (arsip, tidak dipakai API) |
 
 Jalankan API: `uvicorn src.api.api:app --reload` dari root (port 8000).
 Frontend: repo terpisah [web-wisata-jakarta](https://github.com/Hazjel/web-wisata-jakarta)
