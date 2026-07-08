@@ -85,11 +85,14 @@ weighted rating** (anti-bias venue sepi) + filter budget (proxy kategori).
 Output `cbf.candidates()` = kandidat top-N + skor satisfaction → input fitness
 GA/PSO di NB 06. Kode inti `src/modeling/cbf.py`.
 
-**Evaluasi CBF (Precision@K)** — cell inline di NB 05: leave-one-out per user
-dgn ground truth check-in nyata STEPS (317 user). Metrik Precision/nDCG/MRR
-@5/@10/@20, CBF vs baseline popularitas → `cbf_evaluation.csv`. Hasil: CBF
-mengungguli baseline 40–131× (personalisasi terbukti). Limitasi: data sparse
-→ angka absolut kecil, nilai utama = pembanding relatif.
+**Evaluasi CBF** — cell inline NB 05: leave-one-out per user, ground truth
+check-in nyata STEPS (317 user ≥2 venue). Metrik **HitRate@K / nDCG@K / MRR**
+(top-K = binary relevance recsys), CBF vs **2 baseline (popularitas + random)**
+→ `cbf_evaluation.csv`. Hasil: di K kecil (@5-@20, rekomendasi teratas yang
+dilihat user) CBF unggul ~1.8× atas random & jauh di atas populer →
+personalisasi belajar preferensi. Limitasi: implicit feedback sparse (mayoritas
+user 2 venue) → angka absolut kecil wajar (HitRate@10 lazim 0,05-0,20 di POI
+recsys); nilai = pembanding relatif.
 
 ---
 
