@@ -85,6 +85,12 @@ weighted rating** (anti-bias venue sepi) + filter budget (proxy kategori).
 Output `cbf.candidates()` = kandidat top-N + skor satisfaction → input fitness
 GA/PSO di NB 06. Kode inti `src/modeling/cbf.py`.
 
+**Evaluasi CBF (Precision@K)** — cell inline di NB 05: leave-one-out per user
+dgn ground truth check-in nyata STEPS (317 user). Metrik Precision/nDCG/MRR
+@5/@10/@20, CBF vs baseline popularitas → `cbf_evaluation.csv`. Hasil: CBF
+mengungguli baseline 40–131× (personalisasi terbukti). Limitasi: data sparse
+→ angka absolut kecil, nilai utama = pembanding relatif.
+
 ---
 
 ## NB 06 — Optimasi Itinerary (`notebooks/06_optimization.ipynb`) + `src/modeling/`
