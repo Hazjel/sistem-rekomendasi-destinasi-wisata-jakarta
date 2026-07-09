@@ -22,14 +22,21 @@ import config
 
 
 class ContentBasedFilter:
-    def __init__(self, csv_path=None):
+    def __init__(self, csv_path=None, method="tfidf"):
+        """method: 'tfidf' (default, cepat) atau 'embedding' (multilingual
+        MiniLM — paham makna & sinonim ID+EN, tapi load model ~118MB)."""
         if csv_path is None:
             csv_path = config.CLUSTERED_VENUES_CSV
         self.df = pd.read_csv(csv_path)
+        self.method = method
         texts = (self.df["venue_category"].fillna("") + " " +
                  self.df["description"].fillna(""))
-        self._tfidf = TfidfVectorizer(token_pattern=r"[^:\s]+")
-        self._mat = self._tfidf.fit_transform(texts)
+        if method == "embedding":
+            self._emb_model = None      # lazy load saat _embed pertama
+            self._mat = self._embed(texts.tolist())   # matriks embedding venue
+        else:
+            self._tfidf = TfidfVectorizer(token_pattern=r"[^:\s]+")
+            self._mat = self._tfidf.fit_transform(texts)
         # Popularitas: Bayesian weighted rating (formula IMDB) — rating mentah
         # bias ke venue sepi (5.0 dari 4 review > Monas 4.6 dari 122rb review).
         # WR = (v/(v+m))*R + (m/(v+m))*C ; m = median jumlah review, C = mean rating.
@@ -42,6 +49,28 @@ class ContentBasedFilter:
         self.df["_price"] = self.df["venue_category"].map(
             lambda c: config.CATEGORY_PRICE_LEVEL.get(
                 c, config.CATEGORY_PRICE_LEVEL["DEFAULT"]))
+
+    _EMB_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+    def _embed(self, texts):
+        """Mean-pooled + normalized sentence embeddings (multilingual)."""
+        import torch
+        from transformers import AutoModel, AutoTokenizer
+        if self._emb_model is None:
+            self._emb_tok = AutoTokenizer.from_pretrained(self._EMB_MODEL_NAME)
+            self._emb_model = AutoModel.from_pretrained(self._EMB_MODEL_NAME)
+            self._emb_model.eval()
+        out = []
+        for i in range(0, len(texts), 32):     # batch
+            batch = [t if t.strip() else "tempat wisata" for t in texts[i:i + 32]]
+            enc = self._emb_tok(batch, padding=True, truncation=True,
+                                max_length=128, return_tensors="pt")
+            with torch.no_grad():
+                o = self._emb_model(**enc)
+            mask = enc["attention_mask"].unsqueeze(-1).float()
+            vec = (o.last_hidden_state * mask).sum(1) / mask.sum(1).clamp(min=1e-9)
+            out.append(torch.nn.functional.normalize(vec, dim=1).cpu().numpy())
+        return np.vstack(out)
 
     def score(self, preference_text=None, budget=None):
         """Skor CBF + satisfaction utk semua venue.
@@ -56,7 +85,10 @@ class ContentBasedFilter:
         """
         df = self.df
         if preference_text:
-            q = self._tfidf.transform([preference_text])
+            if self.method == "embedding":
+                q = self._embed([preference_text])
+            else:
+                q = self._tfidf.transform([preference_text])
             sim = cosine_similarity(q, self._mat).ravel()
         else:
             sim = np.zeros(len(df))

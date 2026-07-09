@@ -94,6 +94,16 @@ personalisasi belajar preferensi. Limitasi: implicit feedback sparse (mayoritas
 user 2 venue) → angka absolut kecil wajar (HitRate@10 lazim 0,05-0,20 di POI
 recsys); nilai = pembanding relatif.
 
+**Perbandingan metode CBF (TF-IDF vs Embedding)** — cell inline NB 05: 76
+deskripsi kosong diisi via websearch (`fill_descriptions.py`) → 161/161 desc
+lengkap, input adil. TF-IDF vs multilingual sentence embedding
+(`paraphrase-multilingual-MiniLM-L12-v2`, dipilih krn 66/85 desc bhs Inggris)
+→ `cbf_method_comparison.csv`. **Temuan: TF-IDF unggul** (HitRate@10 0.118 vs
+0.088) — sinyal utama = kategori (teks pendek terstruktur), TF-IDF tangkap
+exact match; embedding mengaburkan ke makna umum. Metode lebih kompleks tak
+selalu unggul. CBF web tetap TF-IDF (embedding: `ContentBasedFilter(method=
+'embedding')` utk riset, load 118MB).
+
 ---
 
 ## NB 06 — Optimasi Itinerary (`notebooks/06_optimization.ipynb`) + `src/modeling/`
