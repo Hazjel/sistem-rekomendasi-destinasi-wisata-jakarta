@@ -22,18 +22,32 @@ import config
 
 
 class ContentBasedFilter:
-    def __init__(self, csv_path=None, method="tfidf"):
-        """method: 'tfidf' (default, cepat) atau 'embedding' (multilingual
-        MiniLM — paham makna & sinonim ID+EN, tapi load model ~118MB)."""
+    def __init__(self, csv_path=None, method="tfidf", emb_model=None,
+                 emb_max_len=128, cat_weight=1, emb_prefix=None):
+        """method: 'tfidf' (default, cepat) atau 'embedding' (sentence
+        embedding — paham makna & sinonim ID+EN, tapi load model ~118MB+).
+
+        Param embedding (dipakai hanya jika method='embedding'):
+          emb_model   : nama model HF (default MiniLM). Mis. e5/mpnet.
+          emb_max_len : truncation token (128 default; naikin utk desc panjang).
+          cat_weight  : ulang venue_category N kali di teks (tekankan sinyal
+                        kategori agar tak tenggelam oleh description panjang).
+          emb_prefix  : (doc_prefix, query_prefix) utk model e5 yang butuh
+                        'passage: ' / 'query: '. None = tanpa prefix.
+        """
         if csv_path is None:
             csv_path = config.CLUSTERED_VENUES_CSV
         self.df = pd.read_csv(csv_path)
         self.method = method
-        texts = (self.df["venue_category"].fillna("") + " " +
-                 self.df["description"].fillna(""))
+        self._emb_name = emb_model or self._EMB_MODEL_NAME
+        self._emb_max_len = emb_max_len
+        self._emb_prefix = emb_prefix
+        cat = self.df["venue_category"].fillna("")
+        texts = ((cat + " ") * cat_weight + self.df["description"].fillna(""))
         if method == "embedding":
             self._emb_model = None      # lazy load saat _embed pertama
-            self._mat = self._embed(texts.tolist())   # matriks embedding venue
+            doc_pref = emb_prefix[0] if emb_prefix else ""
+            self._mat = self._embed([doc_pref + t for t in texts.tolist()])
         else:
             self._tfidf = TfidfVectorizer(token_pattern=r"[^:\s]+")
             self._mat = self._tfidf.fit_transform(texts)
@@ -57,14 +71,14 @@ class ContentBasedFilter:
         import torch
         from transformers import AutoModel, AutoTokenizer
         if self._emb_model is None:
-            self._emb_tok = AutoTokenizer.from_pretrained(self._EMB_MODEL_NAME)
-            self._emb_model = AutoModel.from_pretrained(self._EMB_MODEL_NAME)
+            self._emb_tok = AutoTokenizer.from_pretrained(self._emb_name)
+            self._emb_model = AutoModel.from_pretrained(self._emb_name)
             self._emb_model.eval()
         out = []
         for i in range(0, len(texts), 32):     # batch
             batch = [t if t.strip() else "tempat wisata" for t in texts[i:i + 32]]
             enc = self._emb_tok(batch, padding=True, truncation=True,
-                                max_length=128, return_tensors="pt")
+                                max_length=self._emb_max_len, return_tensors="pt")
             with torch.no_grad():
                 o = self._emb_model(**enc)
             mask = enc["attention_mask"].unsqueeze(-1).float()
@@ -86,7 +100,8 @@ class ContentBasedFilter:
         df = self.df
         if preference_text:
             if self.method == "embedding":
-                q = self._embed([preference_text])
+                qp = self._emb_prefix[1] if self._emb_prefix else ""
+                q = self._embed([qp + preference_text])
             else:
                 q = self._tfidf.transform([preference_text])
             sim = cosine_similarity(q, self._mat).ravel()

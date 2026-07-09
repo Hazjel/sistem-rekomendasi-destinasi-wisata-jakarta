@@ -98,11 +98,25 @@ recsys); nilai = pembanding relatif.
 deskripsi kosong diisi via websearch (`fill_descriptions.py`) → 161/161 desc
 lengkap, input adil. TF-IDF vs multilingual sentence embedding
 (`paraphrase-multilingual-MiniLM-L12-v2`, dipilih krn 66/85 desc bhs Inggris)
-→ `cbf_method_comparison.csv`. **Temuan: TF-IDF unggul** (HitRate@10 0.118 vs
-0.088) — sinyal utama = kategori (teks pendek terstruktur), TF-IDF tangkap
-exact match; embedding mengaburkan ke makna umum. Metode lebih kompleks tak
-selalu unggul. CBF web tetap TF-IDF (embedding: `ContentBasedFilter(method=
-'embedding')` utk riset, load 118MB).
+→ `cbf_method_comparison.csv`. Baseline MiniLM kalah dari TF-IDF (HitRate@10
+0.118 vs 0.088).
+
+**Tuning embedding (sec.8 NB 05)** — 4 pengungkit diuji (`cbf.py` parametrik:
+`emb_model`, `emb_max_len`, `cat_weight`, `emb_prefix`) →
+`cbf_embedding_tuning.csv`. **Temuan trade-off, bukan menang mutlak**:
+- **mpnet** (`paraphrase-multilingual-mpnet-base-v2`) UNGGUL di **HitRate@5
+  (0.077 vs 0.056)** & **MRR (0.048 vs 0.043)** — di rekomendasi puncak +
+  peringkat, embedding besar menang.
+- **TF-IDF** tetap unggul di recall lebar (@10 0.118, @20 0.163).
+- **cat_weight=3** naikkan MiniLM (@5 0.035→0.063) → sinyal kategori memang
+  tenggelam oleh deskripsi; menekankan kategori membantu.
+- **max_len 256** ~nol efek. **e5-base** kolaps (0.017): query panjang
+  (agregasi riwayat) di luar distribusi latih e5 (query pendek) → similarity
+  semua venue berhimpit. Bukan model jelek, tak cocok format eval — dilaporkan.
+
+CBF web tetap **TF-IDF** (ringan, recall lebar bagus). mpnet layak dieksplor bila
+target = presisi top-5 (`ContentBasedFilter(method='embedding',
+emb_model='...mpnet...')`), tapi load ~1GB & lambat startup.
 
 ---
 
