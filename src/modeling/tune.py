@@ -30,6 +30,7 @@ from cbf import ContentBasedFilter
 from ga import run_ga
 from pso import run_pso
 from hybrid import run_hybrid
+from gwo_ts import run_gwo_ts
 
 TUNING_CSV = "data/processed/tuning_results.csv"
 N_RUNS = 5
@@ -42,6 +43,10 @@ SCENARIOS = [
 GA_GRID = list(itertools.product([0.1, 0.2, 0.3], [0.7, 0.8, 0.9]))   # (mut, cx)
 PSO_GRID = list(itertools.product([0.4, 0.5, 0.7], [1.0, 1.5, 2.0]))  # (w, c)
 HYBRID_REFRESH = [5, 10, 20]
+# GWO-TS: (pull_alpha, ts_max_neighbors). Beta/delta di-skala dari alpha
+# (0.5x, 0.17x — jaga rasio tarikan progresif alpha>beta>delta notebook).
+# Hipotesis: neighbors besar = TS lebih intensif rapikan rute (fix travel boros).
+GWO_GRID = list(itertools.product([0.6, 0.8], [8, 16, 24]))           # (p_alpha, neighbors)
 
 
 def _problems():
@@ -128,15 +133,38 @@ def main():
     df = pd.DataFrame(rows)
     hy_best, hy_ranks = best_by_rank(df[df.algorithm == "Hybrid"])
 
+    # --- Fase C: GWO-TS grid (pull_alpha x ts_max_neighbors) ---
+    print(f"\n=== GWO-TS grid: {len(GWO_GRID)} kombinasi ===")
+    for p_alpha, nb in GWO_GRID:
+        p_beta, p_delta = round(p_alpha * 0.5, 3), round(p_alpha * 0.17, 3)
+        for label, prob in probs:
+            t0 = time.perf_counter()
+            mean, std = _eval(run_gwo_ts, prob, p_alpha=p_alpha, p_beta=p_beta,
+                              p_delta=p_delta, max_neighbors=nb)
+            rows.append({"algorithm": "GWO-TS",
+                         "params": f"alpha={p_alpha},nb={nb}",
+                         "mut": None, "cx": None, "w": None, "c": None,
+                         "refresh": None, "scenario": label,
+                         "fitness_mean": mean, "fitness_std": std,
+                         "sec": round(time.perf_counter() - t0, 1)})
+        print(f"  alpha={p_alpha} nb={nb}: "
+              + " | ".join(f"{r['scenario']}={r['fitness_mean']:.2f}"
+                           for r in rows[-len(probs):]))
+
+    df = pd.DataFrame(rows)
+    gwo_best, gwo_ranks = best_by_rank(df[df.algorithm == "GWO-TS"])
+
     df.to_csv(TUNING_CSV, index=False)
     print(f"\nTersimpan -> {TUNING_CSV}")
     print("\n=== REKOMENDASI PARAMETER (mean rank lintas skenario) ===")
     print(f"GA     : {ga_best}")
     print(f"PSO    : {pso_best}")
     print(f"Hybrid : {hy_best}")
+    print(f"GWO-TS : {gwo_best}")
     print("\nDetail rank GA:");     print(ga_ranks.to_string())
     print("\nDetail rank PSO:");    print(pso_ranks.to_string())
     print("\nDetail rank Hybrid:"); print(hy_ranks.to_string())
+    print("\nDetail rank GWO-TS:"); print(gwo_ranks.to_string())
 
 
 if __name__ == "__main__":

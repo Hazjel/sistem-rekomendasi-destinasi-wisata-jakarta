@@ -538,5 +538,8 @@ GWO_PULL_BETA = 0.3       # menuju beta
 GWO_PULL_ALPHA = 0.6      # menuju alpha (leader terbaik — tarikan terkuat)
 
 TS_TENURE = 10            # panjang tabu-list (tuple permutasi yang baru diterima)
-TS_MAX_NEIGHBORS = 8      # kandidat neighbor per refinement (swap/insertion acak)
+TS_MAX_NEIGHBORS = 16     # kandidat neighbor per refinement (swap/insertion acak);
+                          # grid search (tune.py Fase C): 8->16 naikkan fitness 5hari
+                          # ~5x (0.20->0.94) — TS lebih intensif merapikan rute
+
 TS_POLISH_PASSES = 3      # intensifikasi TS akhir dengan neighborhood diperbesar
