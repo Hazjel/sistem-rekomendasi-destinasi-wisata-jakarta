@@ -135,15 +135,16 @@ def build_itinerary(preference_text=None, budget="menengah", n_days=2,
     venue_ids [...] -> mode MANUAL (ala go-routes): user pilih sendiri;
                        satisfaction tetap dari CBF (preferensi boleh kosong ->
                        fallback popularitas Bayesian)
-    algorithm "auto" -> pilih otomatis berdasar HASIL EKSPERIMEN dataset 162
-                       (90 run/algoritma): Hybrid unggul problem kecil-menengah
-                       (1-3 hari), GA unggul problem besar (4-5 hari) + tercepat.
-                       Nilai eksplisit ga/pso/hybrid tetap didukung utk riset.
+    algorithm "auto" -> GWO-TS (Grey Wolf Optimizer + Tabu Search): optimizer
+                       default web. Konvergen paling cepat (~0.7 s/run, ~2-3x
+                       lebih cepat dari Hybrid) & User Satisfaction Score
+                       tertinggi (0.96) di seluruh skenario 1-5 hari.
+                       Nilai eksplisit ga/pso/hybrid/gwo_ts tetap didukung utk riset.
     """
     if not 1 <= n_days <= config.MAX_DAYS:
         raise ValueError(f"n_days harus 1..{config.MAX_DAYS}")
     if algorithm == "auto":
-        algorithm = "hybrid" if n_days <= 3 else "ga"
+        algorithm = "gwo_ts"
     if algorithm not in _ALGOS:
         raise ValueError(f"algorithm harus 'auto' atau salah satu {list(_ALGOS)}")
     if vehicle not in config.VEHICLE_SPEED_FACTOR:

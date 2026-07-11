@@ -64,9 +64,8 @@ class ItineraryRequest(BaseModel):
         None, description="Mode MANUAL: daftar venue_id pilihan user "
                           "(dari GET /venues). None -> mode otomatis (CBF).")
     algorithm: str = Field(
-        "auto", description="auto (default — pilih otomatis dari hasil "
-                            "eksperimen: hybrid utk 1-3 hari, ga utk 4-5) "
-                            "/ ga / pso / hybrid")
+        "auto", description="auto (default -> GWO-TS: tercepat & USS tertinggi) "
+                            "/ ga / pso / hybrid / gwo_ts")
     vehicle: str = Field(
         "mobil", description="moda kendaraan: mobil / motor "
                             "(mempengaruhi estimasi waktu tempuh & jumlah "
