@@ -29,8 +29,10 @@ from cbf import ContentBasedFilter
 from ga import run_ga
 from pso import run_pso
 from hybrid import run_hybrid
+from gwo_ts import run_gwo_ts
 
-ALGOS = {"GA": run_ga, "PSO": run_pso, "Hybrid": run_hybrid}
+ALGOS = {"GA": run_ga, "PSO": run_pso, "Hybrid": run_hybrid,
+         "GWO-TS": run_gwo_ts}
 
 # Skenario uji: (label, n_days, preferensi, budget)
 SCENARIOS = [

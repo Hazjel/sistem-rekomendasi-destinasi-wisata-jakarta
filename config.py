@@ -515,3 +515,28 @@ BUDGET_LEVELS = {"hemat": 1, "menengah": 2, "bebas": 3}
 # kompleks Lubang Buaya (Monumen Pancasila Sakti dkk, bukan bagian TMII).
 TMII_BBOX = (-6.3120, -6.2960, 106.8855, 106.9060)  # (lat_min, lat_max, lon_min, lon_max)
 TMII_PARENT_NAME = "taman mini indonesia indah (tmii)"
+
+
+# ============================================================================
+# GWO-TS (Grey Wolf Optimizer + Tabu Search) — optimizer default baru,
+# menggantikan GA-PSO Hybrid untuk penyusunan itinerary di service/website.
+# ============================================================================
+# Port dari notebook GWO-TS ke representasi permutasi TTDPProblem:
+#   - GWO: 3 leader (alpha/beta/delta), koefisien a turun linear 2->0, switch
+#     eksploitasi (|A|<1: tarik ke delta/beta/alpha) vs eksplorasi (|A|>=1:
+#     swap-mutation acak 2x). Prob tarikan progresif — makin dekat ke alpha
+#     makin kuat.
+#   - TS: intensifikasi alpha tiap iterasi. Neighborhood swap + insertion,
+#     tabu-list FIFO (tenure), aspiration (terima move tabu bila lebih baik
+#     dari best lokal). TS mengambil peran 2-opt polish pada algoritma lain.
+# Wolf indeks 0 dijaga sebagai elit (tidak digerakkan, diisi alpha hasil TS).
+GWO_N_WOLVES = 50
+GWO_N_ITER = 120          # GWO butuh iterasi lebih sedikit dari GA/PSO (200) karena
+                          # TS me-refine alpha tiap iterasi -> konvergen lebih cepat
+GWO_PULL_DELTA = 0.1      # prob menerapkan tiap swap menuju delta (tarikan terlemah)
+GWO_PULL_BETA = 0.3       # menuju beta
+GWO_PULL_ALPHA = 0.6      # menuju alpha (leader terbaik — tarikan terkuat)
+
+TS_TENURE = 10            # panjang tabu-list (tuple permutasi yang baru diterima)
+TS_MAX_NEIGHBORS = 8      # kandidat neighbor per refinement (swap/insertion acak)
+TS_POLISH_PASSES = 3      # intensifikasi TS akhir dengan neighborhood diperbesar

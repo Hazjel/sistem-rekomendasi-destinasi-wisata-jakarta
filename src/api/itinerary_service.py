@@ -21,11 +21,13 @@ sys.path.insert(0, os.path.join(_ROOT, "src", "modeling"))
 import config
 from cbf import ContentBasedFilter
 from ga import run_ga
+from gwo_ts import run_gwo_ts
 from hybrid import run_hybrid
 from problem import TTDPProblem
 from pso import run_pso
 
-_ALGOS = {"ga": run_ga, "pso": run_pso, "hybrid": run_hybrid}
+_ALGOS = {"ga": run_ga, "pso": run_pso, "hybrid": run_hybrid,
+          "gwo_ts": run_gwo_ts}
 
 # --- load sekali saat startup ---
 cbf = ContentBasedFilter()
