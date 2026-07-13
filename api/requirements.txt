@@ -1,0 +1,14 @@
+# Dependensi RAMPING khusus backend serverless Vercel (function di api/index.py).
+# Hanya paket yang benar-benar di-import saat serving — matplotlib, openpyxl,
+# shapely (preprocessing/notebook), dan uvicorn (Vercel sediakan server sendiri)
+# sengaja DIBUANG agar ukuran deployment di bawah batas Vercel.
+fastapi
+pandas
+numpy
+scikit-learn
+scipy
+geopy
+pydantic
+python-dotenv
+folium
+requests
