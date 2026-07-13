@@ -3,3 +3,12 @@ data/**/*.png filter=lfs diff=lfs merge=lfs -text
 data/**/*.html filter=lfs diff=lfs merge=lfs -text
 data/**/*.svg filter=lfs diff=lfs merge=lfs -text
 data/**/*.csv filter=lfs diff=lfs merge=lfs -text
+
+# CSV serving (dipakai backend runtime) = file biasa, BUKAN LFS, agar bisa
+# di-deploy ke Vercel serverless (Vercel tidak menjalankan git lfs pull).
+# Total ~1.3MB, kecil — aman disimpan langsung di git.
+data/processed/jakarta_tourism_venues_clustered.csv !filter !diff !merge text
+data/processed/jakarta_travel_time_allpairs.csv !filter !diff !merge text
+data/processed/jakarta_travel_time_inzone.csv !filter !diff !merge text
+data/processed/jakarta_travel_time_motor.csv !filter !diff !merge text
+data/processed/jakarta_hotels.csv !filter !diff !merge text
