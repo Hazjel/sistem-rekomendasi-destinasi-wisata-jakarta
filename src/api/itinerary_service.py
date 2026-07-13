@@ -149,6 +149,8 @@ def build_itinerary(preference_text=None, budget="menengah", n_days=2,
         raise ValueError(f"algorithm harus 'auto' atau salah satu {list(_ALGOS)}")
     if vehicle not in config.VEHICLE_SPEED_FACTOR:
         raise ValueError(f"vehicle harus salah satu {list(config.VEHICLE_SPEED_FACTOR)}")
+    if budget is not None and budget not in config.BUDGET_LEVELS:
+        raise ValueError(f"budget harus salah satu {list(config.BUDGET_LEVELS)}")
 
     # --- kandidat + satisfaction ---
     if venue_ids:
