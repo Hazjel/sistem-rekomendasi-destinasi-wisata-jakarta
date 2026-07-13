@@ -33,9 +33,14 @@ import itinerary_service as svc
 # .env di root project (GOOGLE_PLACES_KEY) — utk proxy foto Places
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 _PLACES_KEY = os.environ.get("GOOGLE_PLACES_KEY", "")
-_PHOTO_CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "..",
-                                "data", "photo_cache")
-os.makedirs(_PHOTO_CACHE_DIR, exist_ok=True)
+# Foto sudah di-serve sebagai aset statis frontend (public/photos/), jadi cache
+# ini hanya fallback proxy. Di serverless (Vercel) filesystem read-only kecuali
+# /tmp -> pakai TMPDIR agar makedirs tak crash saat import.
+_PHOTO_CACHE_DIR = os.path.join(os.environ.get("TMPDIR", "/tmp"), "photo_cache")
+try:
+    os.makedirs(_PHOTO_CACHE_DIR, exist_ok=True)
+except OSError:
+    pass   # filesystem read-only penuh -> cache foto dinonaktifkan, tak fatal
 
 app = FastAPI(title="Sistem Rekomendasi Destinasi Wisata Jakarta",
               description="CBF (TF-IDF+MMR) + optimasi rute GA/PSO/Hybrid — "
