@@ -36,6 +36,20 @@ hotels = hotels.reset_index().rename(columns={"index": "hotel_id"})
 venues = pd.read_csv(config.CLUSTERED_VENUES_CSV)
 
 
+_DAYS_ID = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+
+
+def _closed_days(row):
+    """Indeks hari (0=Senin..6=Minggu) di mana venue tutup. Frontend cocokkan
+    dengan hari ini (getDay) untuk menampilkan badge 'Tutup'."""
+    out = []
+    for i, d in enumerate(_DAYS_ID):
+        buka = row.get(f"{d}_buka")
+        if pd.isna(buka) or str(buka).strip().lower() in ("tutup", "closed", ""):
+            out.append(i)
+    return out
+
+
 def list_venues():
     """Semua venue utk grid Home + mode pilih-manual + peta."""
     out = venues.copy()
@@ -45,10 +59,12 @@ def list_venues():
     out["description_short"] = (out["description"].fillna("")
                                 .str.slice(0, 160))
     out["has_photo"] = out["photo_ref"].notna()
+    out["closed_days"] = out.apply(_closed_days, axis=1)
     cols = ["venue_id", "name", "venue_category", "zone_id",
             "google_rating", "google_rating_count", "price_level",
             "latitude", "longitude",
-            "time_spent_minutes", "description_short", "has_photo"]
+            "time_spent_minutes", "description_short", "has_photo",
+            "closed_days"]
     return out[cols].fillna(
         {"google_rating": 0, "google_rating_count": 0}).to_dict(orient="records")
 
