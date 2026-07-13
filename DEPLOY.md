@@ -3,20 +3,44 @@
 Sistem = 2 repo terpisah (frontend React, backend FastAPI). Backend harus
 online lebih dulu, karena frontend memanggilnya.
 
-## Jalur yang dipakai (gratis, tanpa kartu)
+## Jalur yang dipakai — semua di Vercel (gratis, tanpa kartu)
 
-- **Frontend** → **Vercel** (situs statis React). Foto venue sudah di-bundle
+2 project Vercel terpisah (repo tetap terpisah):
+- **Frontend** → Vercel (situs statis React). Foto venue sudah di-bundle
   sebagai aset statis (`public/photos/`), jadi tak butuh backend untuk gambar.
-- **Backend** → **Hugging Face Spaces** (Docker, server Python persisten).
-  Dipilih karena dependensi backend (scipy+pandas+sklearn ~240 MB) mendekati
-  batas Vercel serverless dan rute GWO-TS multi-hari bisa melebihi batas waktu
-  function. HF Spaces tak punya batasan itu. **Lihat `README_HF_SPACES.md`.**
+- **Backend** → Vercel (Python serverless, `vercel.json` + `api/index.py`).
+  `maxDuration` diset 60 s agar rute GWO-TS multi-hari tak timeout (aktualnya
+  ~1–2 s/run, jauh di bawah batas). Dependensi dirampingkan di
+  `api/requirements.txt`.
 
-> Alternatif backend serverless-Vercel masih tersedia (`vercel.json`,
-> `api/index.py`), tapi berisiko size/timeout — bukan jalur utama.
+> **Catatan risiko:** ukuran paket backend (pandas+sklearn+scipy) besar dan
+> mendekati batas Vercel. Bila deploy backend gagal karena ukuran, opsi
+> alternatif ada di bagian arsip (Render free — gratis, tanpa kartu, hanya
+> "tidur" saat idle).
 
-Urutan: (1) deploy backend HF Spaces, (2) deploy frontend Vercel dengan
-`VITE_API_URL` = URL Space, (3) set `FRONTEND_ORIGINS` di Space = URL Vercel.
+Urutan: (1) deploy backend Vercel, (2) deploy frontend Vercel dengan
+`VITE_API_URL` = URL backend, (3) set `FRONTEND_ORIGINS` di backend = URL
+frontend.
+
+### Langkah backend (repo ini) → Vercel
+
+1. [vercel.com](https://vercel.com) → daftar via GitHub (gratis, tanpa kartu).
+2. **Add New → Project** → import repo ini. Vercel membaca `vercel.json`
+   (runtime Python) & `api/requirements.txt` otomatis.
+3. **Environment Variables**: `FRONTEND_ORIGINS` (isi setelah frontend deploy),
+   `GOOGLE_PLACES_KEY` (opsional — foto sudah statis, biasanya tak perlu).
+4. **Deploy** → catat URL, uji `https://<backend>/health`.
+
+### Langkah frontend (repo web-wisata-jakarta) → Vercel
+
+1. **Add New → Project** → import repo `web-wisata-jakarta` (preset Vite).
+2. **Environment Variables**: `VITE_API_URL` = URL backend (tanpa `/` akhir).
+3. **Deploy** → catat URL frontend.
+
+### Sambungkan (CORS)
+
+Balik ke project backend → Settings → Environment → `FRONTEND_ORIGINS` = URL
+frontend → Redeploy backend.
 
 ---
 
