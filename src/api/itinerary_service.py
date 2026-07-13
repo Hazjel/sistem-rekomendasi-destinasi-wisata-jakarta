@@ -211,8 +211,19 @@ def build_itinerary(preference_text=None, budget="menengah", n_days=2,
                          "day_name": prob.day_names[di],
                          "visits": visits})
 
+    # Alasan venue tak masuk: "tutup" (tutup di SEMUA hari itinerary) vs
+    # "kapasitas" (buka, tapi waktu/rute penuh). Bedakan agar pesan UI akurat —
+    # "tutup" tak bisa diperbaiki dgn menambah hari yang sama.
+    def _fit_reason(vid):
+        row = vidx.loc[vid]
+        for dn in prob.day_names:
+            buka = row.get(f"{dn}_buka")
+            if pd.notna(buka) and str(buka).strip().lower() not in ("tutup", "closed", ""):
+                return "kapasitas"          # buka di minimal satu hari
+        return "tutup"                       # tutup di semua hari itinerary
+
     not_fitted = [
-        {"venue_id": v, "name": vidx.loc[v]["name"]}
+        {"venue_id": v, "name": vidx.loc[v]["name"], "reason": _fit_reason(v)}
         for v in ids if v not in d["visited"]
     ]
     return {
