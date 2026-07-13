@@ -408,9 +408,10 @@ VEHICLE_LABEL = {
 MOTOR_SPEED_KMH = 30           # estimasi motor lalu lintas Jakarta (asumsi laporan)
 OSRM_BIKE_URL = "https://routing.openstreetmap.de/routed-bike"
 TIME_MATRIX_MOTOR_CSV = "data/processed/jakarta_travel_time_motor.csv"
-# Jam mulai hari per moda (menit sejak 00:00). Mobil/motor boleh berangkat
-# pagi (~05:00). Venue tetap tak bisa dimasuki sebelum jam bukanya.
-VEHICLE_DAY_START = {"mobil": 5 * 60, "motor": 5 * 60}
+# Jam mulai hari per moda (menit sejak 00:00). 07:00 = median jam buka venue
+# (mayoritas museum/tempat wisata buka 08:00-10:00). Mulai lebih pagi bikin
+# banyak "menunggu buka" yang memakan kapasitas hari tanpa menambah kunjungan.
+VEHICLE_DAY_START = {"mobil": 7 * 60, "motor": 7 * 60}
 # (Transportasi umum & jalan kaki = future work — butuh data GTFS / batas radius.)
 
 # Seed agar simulasi traffic reproducible.
