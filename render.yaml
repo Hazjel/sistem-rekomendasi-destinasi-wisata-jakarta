@@ -1,0 +1,19 @@
+# Deploy backend FastAPI ke Render (server persisten Python).
+# Cara pakai: dashboard Render -> New -> Blueprint -> pilih repo ini.
+# Render membaca file ini otomatis. Set GOOGLE_PLACES_KEY & FRONTEND_ORIGINS
+# di dashboard (Environment) setelah service dibuat.
+services:
+  - type: web
+    name: wisata-jakarta-api
+    runtime: python
+    plan: free
+    # Tarik data Git LFS (CSV dataset) sebelum start, lalu install deps.
+    buildCommand: "git lfs install && git lfs pull && pip install -r requirements.txt"
+    startCommand: "uvicorn src.api.api:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: FRONTEND_ORIGINS
+        sync: false          # isi manual di dashboard: URL Vercel kamu
+      - key: GOOGLE_PLACES_KEY
+        sync: false          # opsional (foto venue); kosongkan kalau tak ada

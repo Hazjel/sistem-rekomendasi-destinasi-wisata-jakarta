@@ -41,9 +41,15 @@ app = FastAPI(title="Sistem Rekomendasi Destinasi Wisata Jakarta",
               description="CBF (TF-IDF+MMR) + optimasi rute GA/PSO/Hybrid — "
                           "multi-day itinerary (TTDP)")
 
+# CORS: localhost utk dev + domain frontend produksi dari env FRONTEND_ORIGINS
+# (pisah koma, mis. "https://web-wisata.vercel.app"). Set di dashboard Render.
+_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+_extra = os.environ.get("FRONTEND_ORIGINS", "")
+if _extra:
+    _origins += [o.strip() for o in _extra.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
