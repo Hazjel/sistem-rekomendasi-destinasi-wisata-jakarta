@@ -498,6 +498,7 @@ CATEGORY_PRICE_LEVEL = {
     "Zoo": 2, "Aquarium": 3, "Theme Park": 3, "Water Park": 3,
     "Theme Park Ride / Attraction": 3, "Amusement Park": 3,
     "Nature / Park": 0, "Playground": 1, "Skating Rink": 2,
+    "Library": 0,          # perpustakaan publik = gratis
     "DEFAULT": 1,
 }
 # Input turis: "hemat" (<=1), "menengah" (<=2), "bebas" (<=3)
