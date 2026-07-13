@@ -3,15 +3,35 @@
 Sistem = 2 repo terpisah (frontend React, backend FastAPI). Backend harus
 online lebih dulu, karena frontend memanggilnya.
 
-Ada **dua jalur**:
-- **Jalur A — Semua di Vercel** (2 project Vercel: frontend statis + backend
-  Python serverless). Lihat bagian "Jalur A" di bawah.
-- **Jalur B — Vercel (frontend) + Render (backend persisten)**. Lebih andal
-  untuk backend berat; tak ada batas waktu function. Lihat "Jalur B".
+## Jalur yang dipakai (gratis, tanpa kartu)
 
-> **Backend ini load dataset + optimizer.** Di serverless (Vercel), tiap
-> cold-start memuat ulang CSV, dan function punya batas waktu — rute GWO-TS
-> 5 hari bisa mendekati limit. Bila kena timeout/size-limit, pindah ke Jalur B.
+- **Frontend** → **Vercel** (situs statis React). Foto venue sudah di-bundle
+  sebagai aset statis (`public/photos/`), jadi tak butuh backend untuk gambar.
+- **Backend** → **Hugging Face Spaces** (Docker, server Python persisten).
+  Dipilih karena dependensi backend (scipy+pandas+sklearn ~240 MB) mendekati
+  batas Vercel serverless dan rute GWO-TS multi-hari bisa melebihi batas waktu
+  function. HF Spaces tak punya batasan itu. **Lihat `README_HF_SPACES.md`.**
+
+> Alternatif backend serverless-Vercel masih tersedia (`vercel.json`,
+> `api/index.py`), tapi berisiko size/timeout — bukan jalur utama.
+
+Urutan: (1) deploy backend HF Spaces, (2) deploy frontend Vercel dengan
+`VITE_API_URL` = URL Space, (3) set `FRONTEND_ORIGINS` di Space = URL Vercel.
+
+---
+
+## Foto venue (sudah beres)
+
+161 foto sudah diunduh ke `web-wisata-jakarta/public/photos/{venue_id}.jpg`
+via `python src/preprocessing/bundle_photos.py` (butuh `GOOGLE_PLACES_KEY`).
+Frontend memuatnya sebagai aset statis Vercel — **tak perlu Google key saat
+runtime**. Untuk memperbarui foto, jalankan ulang skrip itu lalu commit.
+
+---
+
+## (Arsip) Jalur serverless Vercel & Render
+
+Bagian di bawah dipertahankan sebagai alternatif bila diperlukan.
 
 ---
 
