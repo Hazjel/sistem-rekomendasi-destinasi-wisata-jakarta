@@ -122,7 +122,8 @@ emb_model='...mpnet...')`), tapi load ~1GB & lambat startup.
 
 ## NB 06 — Optimasi Itinerary (`notebooks/06_optimization.ipynb`) + `src/modeling/`
 
-FASE MODELING (selesai): CBF (TF-IDF) + 3 algoritma optimasi dibandingkan.
+FASE MODELING (selesai): CBF (TF-IDF) + **4 algoritma optimasi** dibandingkan
+(GA, PSO, GA-PSO Hybrid, GWO-TS).
 
 | Modul | Isi |
 |-------|-----|
@@ -131,8 +132,10 @@ FASE MODELING (selesai): CBF (TF-IDF) + 3 algoritma optimasi dibandingkan.
 | `src/modeling/ga.py` | GA: OX crossover, tournament, swap mutation, elitism |
 | `src/modeling/pso.py` | PSO diskrit swap-sequence |
 | `src/modeling/hybrid.py` | GA-PSO hybrid (PSO + refresh genetik) |
-| `src/modeling/local_search.py` | 2-opt polish solusi akhir (hapus rute bolak-balik lokal; dipakai seragam 3 algoritma) |
-| `src/modeling/experiment.py` | runner 3 skenario × 3 algoritma × 10 run → `optimization_results.csv` + `optimization_convergence.csv` |
+| `src/modeling/gwo_ts.py` | GWO-TS: Grey Wolf Optimizer (alpha/beta/delta leader) + Tabu Search refine. Fitness terendah tapi tercepat & USS tertinggi → **default web** |
+| `src/modeling/local_search.py` | 2-opt polish solusi akhir (hapus rute bolak-balik lokal; dipakai seragam semua algoritma) |
+| `src/modeling/experiment.py` | runner 3 skenario × 4 algoritma × 10 run → `optimization_results.csv` + `optimization_convergence.csv` |
+| `src/modeling/tune.py` | grid search hyperparameter (fair-comparison, mean-rank lintas skenario): GA/PSO/Hybrid/GWO-TS → `tuning_results.csv` |
 
 Input: clustered + allpairs + hotels. Konstanta di `config.py` (bagian FASE MODELING).
 NB 06 = demo input turis → itinerary + peta folium + kurva konvergensi + tabel USS.
@@ -145,7 +148,7 @@ Silhouette score clustering ada di NB 03.
 | Script | Keterangan |
 |--------|-----------|
 | `api.py` | REST API FastAPI: `GET /venues`, `GET /hotels`, `POST /itinerary` (+ CORS utk frontend :5173) |
-| `itinerary_service.py` | Glue CBF + TTDP + GA/PSO/Hybrid (reuse `src/modeling/*`, load data sekali saat startup) |
+| `itinerary_service.py` | Glue CBF + TTDP + GA/PSO/Hybrid/GWO-TS (reuse `src/modeling/*`, load data sekali saat startup). `algorithm="auto"` → **GWO-TS** (tercepat + USS tertinggi) |
 | `make_map.py` | Utility peta cluster interaktif HTML (`cluster_map.html`) |
 | `archive/recommend.py` | Prototipe lama (arsip, tidak dipakai API) |
 

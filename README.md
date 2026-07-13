@@ -77,24 +77,25 @@ notebooks/
   05_modeling.ipynb          → FASE 1 MODELING: Content-Based Filtering
                                (TF-IDF + Bayesian rating + filter budget)
 
-  06_optimization.ipynb      → FASE MODELING: CBF + GA vs PSO vs GA-PSO Hybrid
+  06_optimization.ipynb      → FASE MODELING: CBF + GA vs PSO vs Hybrid vs GWO-TS
                                demo input turis → itinerary multi-hari + peta,
-                               eksperimen 3 skenario × 3 algoritma × 10 run
+                               eksperimen 3 skenario × 4 algoritma × 10 run
 ```
 
 Folder pendukung (bukan dijalankan langsung):
 
 ```
-src/preprocessing/   15 script .py — dipanggil NB 02 via subprocess.
+src/preprocessing/   18 script .py — dipanggil NB 02 via subprocess.
                     dki_boundary.py = helper polygon (diimport, bukan step).
                     archive/ = script satu-kali, bukan pipeline aktif.
 src/modeling/     FASE MODELING (dipanggil NB 06):
                     cbf.py      — TF-IDF + cosine + Bayesian rating + filter budget
                     problem.py  — TTDP: decoding time-budget + fitness
-                    ga.py / pso.py / hybrid.py — 3 algoritma optimasi (manual numpy)
+                    ga.py / pso.py / hybrid.py / gwo_ts.py — 4 algoritma optimasi (manual numpy)
                     experiment.py — runner perbandingan → optimization_results.csv
+                    tune.py — grid search hyperparameter (4 algoritma)
 src/api/             api.py + itinerary_service.py — REST API produksi
-                    (CBF + GA/PSO/Hybrid); make_map.py — utility peta cluster.
+                    (CBF + GA/PSO/Hybrid/GWO-TS, auto→GWO-TS); make_map.py — utility peta cluster.
                     archive/ — prototipe lama (recommend.py), tak dipakai.
 config.py           konstanta bersama (path, blacklist, kategori, param modeling).
 ```
