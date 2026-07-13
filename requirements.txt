@@ -5,3 +5,9 @@ scikit-learn
 geopy
 fastapi
 uvicorn
+pydantic
+python-dotenv
+folium
+matplotlib
+shapely
+openpyxl

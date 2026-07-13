@@ -1,4 +1,9 @@
 -r requirements.txt
 jupyter
 jupytext
-matplotlib
+
+# Riset perbandingan metode CBF (NB 05 sec.7-8: TF-IDF vs sentence embedding).
+# Opsional — sistem produksi (web + optimasi) hanya butuh requirements.txt.
+torch
+transformers
+huggingface_hub
