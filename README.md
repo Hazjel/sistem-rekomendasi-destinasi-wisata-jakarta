@@ -28,8 +28,8 @@ Riset program **HUMIC** — sistem rekomendasi wisata Jakarta multi-hari berbasi
 
 | File | Isi | Keterangan |
 |------|-----|-----------|
-| `data/processed/jakarta_tourism_venues.csv` | **161 venue**, tanpa zone_id | Share ke rekan / input Content-Based Filtering |
-| `data/processed/jakarta_tourism_venues_clustered.csv` | 161 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
+| `data/processed/jakarta_tourism_venues.csv` | **166 venue** (161 wisata + 5 perpustakaan), tanpa zone_id | Share ke rekan / input Content-Based Filtering |
+| `data/processed/jakarta_tourism_venues_clustered.csv` | 166 venue + `zone_id` + `time_spent_minutes` | Input GA/PSO + visualisasi cluster |
 | `data/processed/jakarta_travel_time_inzone.csv` | **2.231 pasangan** in-zone (100% OSRM) | Fitness penalty in-zone untuk GA/PSO |
 | `data/processed/jakarta_travel_time_allpairs.csv` | **12.880 pasangan** all-pairs (100% OSRM) | Lookup cross-zone untuk GA/PSO |
 | `data/processed/jakarta_hotels.csv` | **181 hotel** bersih (daratan Jakarta) | Titik berangkat/pulang itinerary |

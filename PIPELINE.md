@@ -2,7 +2,7 @@
 
 Semua fase dijalankan dari **notebook** di `notebooks/`, urut per nomor.
 Tiap sel `[RUN]` **cache-aware** (skip kalau output ada). Dataset final:
-**161 venue, 181 hotel**. `config.py` = konstanta bersama (path, blacklist,
+**166 venue** (161 wisata + 5 perpustakaan), **181 hotel**. `config.py` = konstanta bersama (path, blacklist,
 kategori) — di-import semua notebook.
 
 ---
