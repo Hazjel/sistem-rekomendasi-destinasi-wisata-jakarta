@@ -62,7 +62,8 @@ notebooks/
   01_data_collection.ipynb   → data/raw/*  + hotels_google.csv
       Kode collection inline (OSM Overpass, STEPS HuggingFace, Google Places).
 
-  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (161 venue)
+  02_preprocessing_pipeline.ipynb → merged_venues_enriched.csv (166 venue,
+                               termasuk 5 perpustakaan ditambah via add_venue_places.py)
       13 step. Sel [RUN] memanggil script src/preprocessing/*.py via run_step()
       (output streaming real-time ke notebook). Script enrichment API tetap .py.
 
@@ -145,7 +146,7 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 | **Mall tidak masuk** | Scope riset = destinasi wisata (atraksi/budaya/alam). Mall = belanja, bukan destinasi. |
 | **Sub-venue TMII dilebur ke induk** | 43 sub-venue (anjungan, museum kecil, wahana) dalam TMII = satu tiket satu kunjungan — itinerary cukup menjadwalkan "TMII". Ancol TIDAK dilebur: Dufan/SeaWorld dkk bertiket terpisah + durasi panjang = destinasi mandiri. Geofence `config.TMII_BBOX` di `clean_merged.py`. |
 | **Dedupe audit deskripsi** | 12 entri duplikat/sub-venue dibuang (mis. "Dufan Ancol" dup DUFAN, "Klenteng Petak Sembilan" = nama lain Wihara Dharma Bhakti, kompleks Lubang Buaya dilebur ke Monumen Pancasila Sakti) + 6 deskripsi salah-tempel dikosongkan (anti kontaminasi TF-IDF). Daftar di `clean_merged.py`. |
-| **Audit venue non-destinasi** | Venue dgn sinyal "bukan destinasi wisata" dibuang (mis. "Tugu Utama" Kelapa Gading: 1 ulasan Google, tanpa foto, tanpa deskripsi — monumen penanda boulevard, bukan tempat wisata). Sisa dataset 161/161 punya foto Google. |
+| **Audit venue non-destinasi** | Venue dgn sinyal "bukan destinasi wisata" dibuang (mis. "Tugu Utama" Kelapa Gading: 1 ulasan Google, tanpa foto, tanpa deskripsi — monumen penanda boulevard, bukan tempat wisata). Sisa dataset 166/166 punya foto Google. |
 | **K-Means k=8** (Euclidean lat/lon) | Cluster geografis untuk inisialisasi populasi GA/PSO dan soft constraint cross-zone. |
 | **OSRM tanpa traffic** | Tidak ada realtime traffic di OSRM public demo — limitasi dideklarasi di laporan. |
 | **time_spent via log10** | Formula Lim 2019: `log10(rating_count)` × faktor kategori. Proxy, bukan empiris. |

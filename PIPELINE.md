@@ -48,8 +48,9 @@ Script enrichment API tetap `.py`: one-time, butuh API key + cache.
 `dki_boundary.py` = helper polygon DKI (diimport step 9 & 6, bukan step).
 `archive/` = script satu-kali, bukan pipeline aktif.
 
-**Result**: `merged_venues_enriched.csv` — **161 venue** OPERATIONAL DKI, lengkap
-jam per hari, google_rating, description, address, time_spent_minutes.
+**Result**: `merged_venues_enriched.csv` — **166 venue** OPERATIONAL DKI (161
+wisata + 5 perpustakaan via `add_venue_places.py`), lengkap jam per hari,
+google_rating, description, address, time_spent_minutes.
 
 ---
 
