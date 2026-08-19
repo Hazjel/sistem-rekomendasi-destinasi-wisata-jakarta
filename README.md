@@ -78,9 +78,11 @@ notebooks/
   05_modeling.ipynb          → FASE 1 MODELING: Content-Based Filtering
                                (TF-IDF + Bayesian rating + filter budget)
 
-  06_optimization.ipynb      → FASE MODELING: CBF + GA vs PSO vs Hybrid vs GWO-TS
+  06_optimization.ipynb      → FASE MODELING: CBF + 7 algoritma optimasi
+                               (GA, PSO, Hybrid, GWO-TS, ACO-SA, WOA-ILS,
+                               GRASP-ABC — setara Tabel I paper JADIMI)
                                demo input turis → itinerary multi-hari + peta,
-                               eksperimen 3 skenario × 4 algoritma × 10 run
+                               eksperimen 3 skenario × 7 algoritma × 30 run
 ```
 
 Folder pendukung (bukan dijalankan langsung):
@@ -92,9 +94,14 @@ src/preprocessing/   18 script .py — dipanggil NB 02 via subprocess.
 src/modeling/     FASE MODELING (dipanggil NB 06):
                     cbf.py      — TF-IDF + cosine + Bayesian rating + filter budget
                     problem.py  — TTDP: decoding time-budget + fitness
-                    ga.py / pso.py / hybrid.py / gwo_ts.py — 4 algoritma optimasi (manual numpy)
+                    ga.py / pso.py / hybrid.py / gwo_ts.py — 4 algoritma optimasi asli
+                    aco_sa.py / woa_ils.py / grasp_abc.py — 3 algoritma port dari
+                    kode rekan (representasi zona-toy) ke permutasi TTDPProblem,
+                    lihat docstring tiap modul — total 7 algoritma (manual numpy)
+                    local_search.py — 2-opt polish, diterapkan seragam
+                    significance.py — uji Friedman + Wilcoxon post-hoc + deskriptif
                     experiment.py — runner perbandingan → optimization_results.csv
-                    tune.py — grid search hyperparameter (4 algoritma)
+                    tune.py — grid search hyperparameter
 src/api/             api.py + itinerary_service.py — REST API produksi
                     (CBF + GA/PSO/Hybrid/GWO-TS, auto→GWO-TS); make_map.py — utility peta cluster.
                     archive/ — prototipe lama (recommend.py), tak dipakai.
@@ -166,7 +173,7 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 
 ## Fase Modeling (SELESAI — `src/modeling/` + NB 06)
 
-**CBF (TF-IDF) + GA vs PSO vs GA-PSO Hybrid untuk TTDP multi-hari**
+**CBF (TF-IDF) + 7 algoritma optimasi untuk TTDP multi-hari**
 
 - FASE 1 — CBF: TF-IDF `venue_category+description` + Bayesian weighted rating
   + filter budget (proxy kategori) + **seleksi MMR** (diversity — cegah kandidat
@@ -178,12 +185,21 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
   Fitness = Σsatisfaction − w·travel − w·cross_zone − w·zone_revisit
   (penalti bolak-balik ke zona yang sudah ditinggal, intra-hari)
   − w·zone_revisit_day (zona kebelah lintas hari) − penalti jam
-- 3 algoritma manual numpy: GA (OX + tournament + elitism), PSO diskrit
-  (swap-sequence), GA-PSO Hybrid (PSO + refresh genetik) — semuanya di-polish
-  **2-opt local search** di akhir (hapus pola rute bolak-balik lokal)
-- Evaluasi: konvergensi (10 run ± std), **User Satisfaction Score** kuantitatif,
-  runtime, silhouette clustering (NB 03)
-- Hasil: lihat `data/processed/optimization_results.csv` + kesimpulan NB 06
+- 7 algoritma manual numpy — permutasi kandidat, fair comparison via 2-opt
+  polish seragam (`local_search.py`):
+  - **GA** (OX + tournament + elitism), **PSO** diskrit (swap-sequence),
+    **Hybrid GA-PSO** (PSO + refresh genetik) — dirancang untuk repo ini.
+  - **GWO-TS** (Grey Wolf Optimizer + Tabu Search) — optimizer default
+    web/API. **ACO-SA**, **WOA-ILS**, **GRASP-ABC** — port dari kode rekan
+    (representasi zona-toy 4-slot/hari) ke permutasi TTDPProblem, dipakai
+    untuk revisi paper (uji Friedman/Wilcoxon 7 algoritma, setara Tabel I
+    JADIMI). Detail port di docstring `src/modeling/aco_sa.py`,
+    `woa_ils.py`, `grasp_abc.py`.
+- Evaluasi: konvergensi (30 run ± std), **User Satisfaction Score** kuantitatif,
+  runtime, uji signifikansi statistik (`significance.py`), silhouette
+  clustering (NB 03)
+- Hasil: lihat `data/processed/optimization_results.csv` +
+  `significance_tests.csv` / `uss_descriptive.csv` + kesimpulan NB 06
 
 ---
 
@@ -192,7 +208,8 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 Arsitektur 2 repo:
 
 - **Backend (repo ini)** — FastAPI: `GET /venues`, `GET /hotels`,
-  `POST /itinerary` (CBF + GA/PSO/Hybrid, reuse `src/modeling/*`).
+  `POST /itinerary` (CBF + GA/PSO/Hybrid/GWO-TS, `auto` → GWO-TS,
+  reuse `src/modeling/*`).
   File: `src/api/api.py` (endpoint) + `src/api/itinerary_service.py` (glue).
   Jalankan: `uvicorn src.api.api:app --reload` (port 8000).
 - **Frontend** — repo [web-wisata-jakarta](https://github.com/Hazjel/web-wisata-jakarta)

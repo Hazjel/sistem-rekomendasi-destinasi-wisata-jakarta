@@ -548,3 +548,47 @@ TS_MAX_NEIGHBORS = 16     # kandidat neighbor per refinement (swap/insertion aca
                           # ~5x (0.20->0.94) — TS lebih intensif merapikan rute
 
 TS_POLISH_PASSES = 3      # intensifikasi TS akhir dengan neighborhood diperbesar
+
+
+# ============================================================================
+# 3 algoritma pembanding paper JADIMI Tabel I — port dari kode rekan (notebook
+# eksternal, 8 blok zona-toy 4-slot/hari) ke representasi permutasi
+# TTDPProblem, mengikuti pola GWO-TS di atas. FA+2-Opt tidak dipakai (tidak
+# ada di Tabel I paper — 7 algoritma: GA, PSO, Hybrid, GWO-TS, ACO-SA,
+# WOA-ILS, GRASP-ABC).
+# ============================================================================
+
+# --- ACO-SA (Ant Colony Optimization + Simulated Annealing) ---
+# Parameter identik notebook rekan (NUM_ANTS, ALPHA_ACO, BETA_ACO,
+# EVAPORATION_RATE, T_INIT, T_MIN, COOLING_RATE, MAX_ITER 30).
+# ACO membangun rute lengkap (bukan subset 4 tempat) via roulette-wheel
+# berbobot feromon x heuristik (satisfaction/travel_time); SA menyempurnakan
+# semut terbaik tiap iterasi via swap/insertion + penerimaan Boltzmann.
+ACO_N_ANTS = 30
+ACO_ALPHA = 1.0            # bobot feromon
+ACO_BETA = 2.0             # bobot heuristik (satisfaction / travel_time)
+ACO_EVAPORATION = 0.1
+ACO_SA_N_ITER = 30
+SA_T_INIT = 100.0
+SA_T_MIN = 0.1
+SA_COOLING_RATE = 0.90
+
+# --- WOA-ILS (Whale Optimization Algorithm + Iterated Local Search) ---
+# POPULATION_SIZE & MAX_ITER identik notebook rekan (50, 30). two_opt_search
+# notebook tidak dibatasi jumlah pass (loop sampai tak ada perbaikan) —
+# local_search.two_opt sudah berhenti otomatis begitu 1 pass tanpa
+# perbaikan, jadi max_pass di sini murni pagar pengaman, bukan pemotongan.
+WOA_N_WHALES = 50
+WOA_N_ITER = 30
+WOA_ILS_MAX_PASS = 10
+
+# --- GRASP-ABC (Greedy Randomized Adaptive Search + Artificial Bee Colony) ---
+# POPULATION_SIZE, MAX_ITER, LIMIT_ABC, alpha identik notebook rekan
+# (50, 30, 5, 0.3). Notebook TIDAK menyampel kandidat saat konstruksi GRASP
+# (menguji SEMUA venue tersisa se-zona) -> GRASP_SAMPLE_SIZE diset besar
+# supaya cabang sampling di grasp_construct() tidak pernah terpakai.
+GRASP_POP_SIZE = 50
+GRASP_ABC_N_ITER = 30
+GRASP_RCL_ALPHA = 0.3      # lebar Restricted Candidate List (0=greedy murni, 1=random)
+GRASP_SAMPLE_SIZE = 9999   # >> n kandidat manapun -> selalu evaluasi semua sisa
+ABC_SCOUT_LIMIT = 5        # batas kemandekan sebelum sumber makanan dibuang

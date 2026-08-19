@@ -10,16 +10,16 @@
     \toprule
     \textbf{Metric} & $\chi^2$ & \textbf{$p$-value} & \textbf{Significant} & \textbf{Best rank} \\
     \midrule
-    Fitness & 12.08 & 0.0071 & \textbf{yes} & GA (2.28) \\
-    USS & 1.17 & 0.7604 & no & GWO--TS (2.40) \\
-    Runtime & 148.48 & $<10^{-32}$ & \textbf{yes} & GWO--TS (1.31) \\
+    Fitness & 200.23 & $<10^{-40}$ & \textbf{yes} & WOA-ILS (2.71) \\
+    USS & 3.18 & 0.7854 & no & WOA-ILS (3.80) \\
+    Runtime & 309.61 & $<10^{-64}$ & \textbf{yes} & GWO--TS (1.69) \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \begin{table}[t]
   \centering
-  \caption{Wilcoxon signed-rank post-hoc on Fitness (Bonferroni-corrected $\alpha = 0.0083$).}
+  \caption{Wilcoxon signed-rank post-hoc on Fitness (Bonferroni-corrected $\alpha = 0.0024$).}
   \label{tab:posthoc_fitness}
   \begin{tabular}{@{}l c c l@{}}
     \toprule
@@ -28,27 +28,57 @@
     GA vs PSO & 0.0006 & \textbf{yes} & GA \\
     GA vs Hybrid & 0.2693 & no & GA \\
     GA vs GWO--TS & 0.0124 & no & GA \\
+    GA vs ACO-SA & $<10^{-12}$ & \textbf{yes} & GA \\
+    GA vs WOA-ILS & 0.8655 & no & GA \\
+    GA vs GRASP-ABC & $<10^{-13}$ & \textbf{yes} & GA \\
     PSO vs Hybrid & 0.0006 & \textbf{yes} & Hybrid \\
     PSO vs GWO--TS & 0.3093 & no & GWO--TS \\
+    PSO vs ACO-SA & $<10^{-12}$ & \textbf{yes} & PSO \\
+    PSO vs WOA-ILS & $<10^{-5}$ & \textbf{yes} & WOA-ILS \\
+    PSO vs GRASP-ABC & $<10^{-13}$ & \textbf{yes} & PSO \\
     Hybrid vs GWO--TS & 0.0960 & no & Hybrid \\
+    Hybrid vs ACO-SA & $<10^{-12}$ & \textbf{yes} & Hybrid \\
+    Hybrid vs WOA-ILS & 0.2161 & no & WOA-ILS \\
+    Hybrid vs GRASP-ABC & $<10^{-12}$ & \textbf{yes} & Hybrid \\
+    GWO--TS vs ACO-SA & $<10^{-12}$ & \textbf{yes} & GWO--TS \\
+    GWO--TS vs WOA-ILS & 0.0140 & no & WOA-ILS \\
+    GWO--TS vs GRASP-ABC & $<10^{-12}$ & \textbf{yes} & GWO--TS \\
+    ACO-SA vs WOA-ILS & $<10^{-13}$ & \textbf{yes} & WOA-ILS \\
+    ACO-SA vs GRASP-ABC & 0.3712 & no & ACO-SA \\
+    WOA-ILS vs GRASP-ABC & $<10^{-14}$ & \textbf{yes} & WOA-ILS \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \begin{table}[t]
   \centering
-  \caption{Wilcoxon signed-rank post-hoc on Runtime (Bonferroni-corrected $\alpha = 0.0083$).}
+  \caption{Wilcoxon signed-rank post-hoc on Runtime (Bonferroni-corrected $\alpha = 0.0024$).}
   \label{tab:posthoc_runtime_sec}
   \begin{tabular}{@{}l c c l@{}}
     \toprule
     \textbf{Pair} & \textbf{$p$-value} & \textbf{Significant} & \textbf{Better} \\
     \midrule
-    GA vs PSO & $<10^{-13}$ & \textbf{yes} & GA \\
-    GA vs Hybrid & $<10^{-9}$ & \textbf{yes} & GA \\
-    GA vs GWO--TS & 0.0868 & no & GWO--TS \\
-    PSO vs Hybrid & 0.2050 & no & PSO \\
+    GA vs PSO & $<10^{-9}$ & \textbf{yes} & GA \\
+    GA vs Hybrid & $<10^{-8}$ & \textbf{yes} & GA \\
+    GA vs GWO--TS & $<10^{-16}$ & \textbf{yes} & GWO--TS \\
+    GA vs ACO-SA & 0.0026 & no & GA \\
+    GA vs WOA-ILS & $<10^{-9}$ & \textbf{yes} & GA \\
+    GA vs GRASP-ABC & $<10^{-15}$ & \textbf{yes} & GA \\
+    PSO vs Hybrid & $<10^{-8}$ & \textbf{yes} & Hybrid \\
     PSO vs GWO--TS & $<10^{-16}$ & \textbf{yes} & GWO--TS \\
+    PSO vs ACO-SA & $<10^{-12}$ & \textbf{yes} & ACO-SA \\
+    PSO vs WOA-ILS & 0.0023 & \textbf{yes} & PSO \\
+    PSO vs GRASP-ABC & $<10^{-16}$ & \textbf{yes} & PSO \\
     Hybrid vs GWO--TS & $<10^{-16}$ & \textbf{yes} & GWO--TS \\
+    Hybrid vs ACO-SA & $<10^{-9}$ & \textbf{yes} & ACO-SA \\
+    Hybrid vs WOA-ILS & $<10^{-5}$ & \textbf{yes} & Hybrid \\
+    Hybrid vs GRASP-ABC & $<10^{-16}$ & \textbf{yes} & Hybrid \\
+    GWO--TS vs ACO-SA & $<10^{-9}$ & \textbf{yes} & GWO--TS \\
+    GWO--TS vs WOA-ILS & $<10^{-10}$ & \textbf{yes} & GWO--TS \\
+    GWO--TS vs GRASP-ABC & $<10^{-16}$ & \textbf{yes} & GWO--TS \\
+    ACO-SA vs WOA-ILS & $<10^{-10}$ & \textbf{yes} & ACO-SA \\
+    ACO-SA vs GRASP-ABC & $<10^{-16}$ & \textbf{yes} & ACO-SA \\
+    WOA-ILS vs GRASP-ABC & $<10^{-16}$ & \textbf{yes} & WOA-ILS \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -65,6 +95,9 @@
     PSO & 0.7653 $\pm$ 1.3058 & -3.9837 & 3.7283 \\
     Hybrid & 1.2351 $\pm$ 1.2715 & -2.5284 & 4.2971 \\
     GWO--TS & 1.1073 $\pm$ 1.1928 & -1.6363 & 4.1788 \\
+    ACO-SA & -3.5446 $\pm$ 5.5722 & -25.1968 & 2.6408 \\
+    WOA-ILS & 1.3589 $\pm$ 1.1651 & -1.4612 & 5.0512 \\
+    GRASP-ABC & -4.1767 $\pm$ 5.6771 & -18.8712 & 1.5449 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -81,6 +114,9 @@
     PSO & 0.9578 $\pm$ 0.0251 & 0.9126 & 0.9949 \\
     Hybrid & 0.9581 $\pm$ 0.0229 & 0.9164 & 0.9949 \\
     GWO--TS & \textbf{0.9586 $\pm$ 0.0207} & 0.9188 & 0.9949 \\
+    ACO-SA & 0.9549 $\pm$ 0.0282 & 0.8934 & 0.9949 \\
+    WOA-ILS & 0.9585 $\pm$ 0.0273 & 0.8967 & 0.9949 \\
+    GRASP-ABC & 0.9569 $\pm$ 0.0220 & 0.9120 & 0.9949 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -93,10 +129,13 @@
     \toprule
     \textbf{Optimizer} & \textbf{Mean $\pm$ Std} & \textbf{Min} & \textbf{Max} \\
     \midrule
-    GA & 1.1748 $\pm$ 0.7269 & 0.3000 & 2.3000 \\
-    PSO & 2.1884 $\pm$ 1.4206 & 0.2800 & 5.8800 \\
-    Hybrid & 2.3552 $\pm$ 1.9274 & 0.2300 & 5.8900 \\
-    GWO--TS & \textbf{1.0159 $\pm$ 0.9044} & 0.1800 & 2.4600 \\
+    GA & 3.5802 $\pm$ 1.5982 & 0.8300 & 5.5500 \\
+    PSO & 5.3758 $\pm$ 3.3437 & 0.6000 & 9.8700 \\
+    Hybrid & 4.6956 $\pm$ 2.9738 & 0.4800 & 8.3300 \\
+    GWO--TS & \textbf{2.1880 $\pm$ 1.2482} & 0.3800 & 3.6900 \\
+    ACO-SA & 4.1118 $\pm$ 2.7717 & 0.3400 & 7.1000 \\
+    WOA-ILS & 19.7608 $\pm$ 23.0030 & 0.1600 & 57.3600 \\
+    GRASP-ABC & 63.4021 $\pm$ 69.9045 & 1.2700 & 175.7600 \\
     \bottomrule
   \end{tabular}
 \end{table}
