@@ -21,3 +21,12 @@ Thumbs.db
 .env
 data/photo_cache/
 data/photo_review/
+
+# Dokumen akademik pribadi (memuat NIM & tanda tangan) — repo ini publik,
+# jadi berkas proposal sengaja tidak di-track.
+*.docx
+PROPOSAL*.pdf
+proposal*.pdf
+
+# Crash dump msys/git-bash
+*.stackdump
