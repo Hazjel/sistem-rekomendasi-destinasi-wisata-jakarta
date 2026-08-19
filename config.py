@@ -479,7 +479,10 @@ PSO_C2 = 1.5                    # tuned dataset-161
 HYBRID_GA_REFRESH_EVERY = 10    # tuned dataset-161
 
 # --- Eksperimen ---
-EXPERIMENT_N_RUNS = 10          # repetisi per algoritma (seed beda)
+EXPERIMENT_N_RUNS = 30          # repetisi per algoritma; seed = RANDOM_SEED+run
+                                # (42..71) -> beda tiap run, IDENTIK antar
+                                # algoritma = blok berpasangan utk uji Friedman/
+                                # Wilcoxon. 30 run mengikuti protokol paper.
 EXPERIMENT_RESULTS_CSV = "data/processed/optimization_results.csv"
 CONVERGENCE_LOG_CSV = "data/processed/optimization_convergence.csv"
 
