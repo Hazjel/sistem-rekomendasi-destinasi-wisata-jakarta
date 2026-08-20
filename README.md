@@ -198,8 +198,34 @@ hapus file output terkait di `data/processed/` lalu jalankan ulang.
 - Evaluasi: konvergensi (30 run ± std), **User Satisfaction Score** kuantitatif,
   runtime, uji signifikansi statistik (`significance.py`), silhouette
   clustering (NB 03)
+- **Temuan (Friedman α=0.05, n=90 blok berpasangan/metrik, 7 algoritma × 3
+  skenario × 30 run):** fitness beda signifikan (χ²=200.23, p<1e-40) — GA,
+  Hybrid, GWO-TS, WOA-ILS membentuk klaster teratas yang **saling setara**
+  (post-hoc Wilcoxon-Bonferroni tak signifikan antar mereka), ACO-SA &
+  GRASP-ABC signifikan kalah dari klaster ini. USS **setara** di semua
+  algoritma (χ²=3.18, p=0.785 — tak signifikan). Runtime beda signifikan
+  (χ²=309.61, p<1e-63) — **GWO-TS signifikan tercepat** dari 6 lawan
+  lainnya, dasar pemilihannya sebagai default web (kualitas solusi setara,
+  kecepatan unggul — bukan superioritas mutlak).
 - Hasil: lihat `data/processed/optimization_results.csv` +
   `significance_tests.csv` / `uss_descriptive.csv` + kesimpulan NB 06
+
+**Hasil 7 algoritma (mean ± std, 630 run = 7 algoritma × 3 skenario × 30 run):**
+
+| Algoritma | Fitness | USS | Runtime (s) |
+|---|---|---|---|
+| GA | 1.4018 ± 1.2517 | 0.9575 ± 0.0220 | 3.58 ± 1.60 |
+| PSO | 0.7653 ± 1.3058 | 0.9578 ± 0.0251 | 5.38 ± 3.34 |
+| Hybrid GA-PSO | 1.2351 ± 1.2715 | 0.9581 ± 0.0229 | 4.70 ± 2.97 |
+| **GWO-TS** | 1.1073 ± 1.1928 | 0.9586 ± 0.0207 | **2.19 ± 1.25** |
+| ACO-SA | -3.5446 ± 5.5722 | 0.9549 ± 0.0282 | 4.11 ± 2.77 |
+| WOA-ILS | **1.3589 ± 1.1651** | 0.9585 ± 0.0273 | 19.76 ± 23.00 |
+| GRASP-ABC | -4.1767 ± 5.6771 | 0.9569 ± 0.0220 | 63.40 ± 69.90 |
+
+Fitness & runtime tidak bisa dibandingkan lintas paper — skala di sini
+(permutasi multi-hari sekaligus) beda dari Tabel I paper JADIMI (konstruksi
+per-hari terpisah, skala ±787). Angka lengkap + tabel LaTeX siap tempel:
+`data/processed/paper_tables.tex`.
 
 ---
 
